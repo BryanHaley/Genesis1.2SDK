@@ -1,0 +1,256 @@
+<HTML>
+<HEAD>
+<!-- Scripts to detect Web Driver presence in IE and NS -->
+<SCRIPT LANGUAGE='VBScript' src='wtIE.js'></script>
+<SCRIPT LANGUAGE='JavaScript' src='wtNS.js'></script>
+
+<TITLE>Block Puzzle</TITLE>
+</HEAD>
+
+<!--  THINGS TO DO IN THE FUTURE...
+
+		1.  Background music - when the player does mids
+		2.  Better status bar graphic - maybe scrolling messages?
+		3.  More sounds...
+		4.  More puzzles...
+		5.  Demo detecting the player, AND when the player is ready...
+		6.  Detect a solve - should be easy, just loop true tileYPos/tileXPos and they should be sequenced...
+//-->
+
+<BODY BGCOLOR="#000000">
+<object classid='clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3' ID='wtScene' width='663' height='541' VIEWASTEXT><embed  type='application/x-wildtangent-web-driver' name='wtScene' width='663' height='541'></embed></object>
+
+<SCRIPT event=WTRenderEvent(event) for=wtScene language=javascript>
+	moveTiles(event);
+</SCRIPT>
+
+<SCRIPT event=WTMouseEvent(event) for=wtScene language=javascript>
+	handleMouseEvent(event);
+</SCRIPT>
+
+<SCRIPT event=WTKeyboardEvent(event) for=wtScene language=javascript>
+	handleKeyEvent(event);
+</SCRIPT>
+
+<P>
+<SCRIPT language=JavaScript1.2 type=text/javascript>
+<!--
+	var backImage, backObj, addLoop, tileMoving = false, xPos, yPos; 
+	var scene, stage, camera, aLight, msgBox, textWeight=0, solvingPuzzle = false; 
+	var selectedTile = -1, selectedTileLocation = -1, mouseSelected = false;
+	var userTimeCount = 0, solveTimer, mouseBusy = false, selectedImage, selectedDrop;
+	var tileImages = new Array(70);
+	var tileDrops  = new Array(70);
+	var tileXPos   = new Array(70);
+	var tileYPos   = new Array(70);
+	var tileField  = new Array(500);
+	var audioClips = new Array(10);
+	var mouseEvent = "", keyboardEvent = "";
+
+	//Detect the Web Driver
+	if(!wtDetectDriver()) 
+	{
+		alert("The WildTangent Web Driver is not installed on this machine.  Please download the WildTangent Web Driver and try this demo again.");
+		location.href = "http://www.wildtangent.com/beta/";
+	}
+
+	//Setup the Scene Object
+	scene = document.wtScene;
+	scene.setErrorHandling(1);
+
+	//Attach Netscape Events
+	if(is_nav4up)
+	{
+		scene.setOnMouseEvent("handleMouseEvent");
+		scene.setOnKeyboardEvent("handleKeyEvent");
+		scene.setOnRenderEvent("moveTiles");
+	}
+	//Start Firing Events
+	scene.setNotifyRenderEvent(true);
+	scene.setNotifyMouseEvent(1);
+	scene.setNotifyKeyboardEvent(true);
+	//Create the Stage
+	stage = scene.createStage(); 
+	//Create and Setup the Camera
+	camera = stage.createCamera();
+	camera.setViewRect( 0, 0, 663, 541);
+	camera.setPosition ( 0, 0, -2 ); 
+	//Add Some Light to the Scene
+	aLight = scene.createLight(0);
+	stage.addObject(aLight);
+	if ( 0 == "1.0.5.28".indexOf(scene.getVersion()))
+		aLight.setColor(1, 1, 1);
+	else
+		aLight.setColor(255, 255, 255);
+	//End of Scene Setup
+
+	//Start the Background Image
+	backImage = scene.createBitmap("graphics/background.wjp");
+	backObj = camera.addDrop(backImage);
+	backObj.setPosition(0, 0);
+	backObj.setSize(663, 541);
+	//End of Background Image
+
+	msgBox = scene.createBlankBitmap(620, 30);
+	camera.addDrop(msgBox,true).setPosition(20,510);
+	msgBox.setColor(255, 0, 0);
+	msgBox.setColorKey(255, 0, 0);
+	msgBox.setTextBkColor(255, 0, 0);
+	msgBox.setTextColor(255, 255, 255);
+	msgBox.setTextFace("Tahoma,Arial");
+	msgBox.setTextHeight(15);
+
+	audioClips[0] = scene.createAudioClip("sounds/flip.wwv");
+
+	xPos = 3; yPos = 1;
+	selectedImage = scene.createBitmap("graphics/shadow.wpg");
+	selectedImage.setColorKey(255, 0, 0);
+	selectedDrop = camera.addDrop(selectedImage);
+	selectedDrop.setPosition(-100, -100);
+	for(addLoop = 0; addLoop < 500; addLoop++) tileField[addLoop] = -1;
+	for(addLoop = 0; addLoop < 64; addLoop++)
+	{
+		tileImages[addLoop] = scene.createBitmap("tiles/tiles" + (yPos) + "x" + (xPos-2) + ".wjp");
+		tileDrops[addLoop] = camera.addDrop(tileImages[addLoop]);
+		tileDrops[addLoop].setPosition(xPos * 50 + xPos, yPos * 50 + yPos + 15);
+		tileXPos[addLoop] = xPos; tileYPos[addLoop] = yPos;
+		tileField[(xPos * 10) + yPos] = addLoop;
+		yPos++; if(yPos == 9) { yPos = 1; xPos++; }
+	}
+	
+	writeMessage("Press any key to begin...");
+	scene.setMaxFramesPerSecond(20);
+	scene.start();
+
+function mixTiles()
+{
+	var mixingLoop, randomX = 0, randomY = 0;
+	for(mixingLoop = 0; mixingLoop < 500; mixingLoop++) tileField[mixingLoop] = -1;
+	for(mixingLoop = 0; mixingLoop < 64; mixingLoop++)
+	{
+		do
+		{
+			randomX = Math.round(Math.random() * 12);
+			randomY = Math.round(Math.random() * 9);
+		} while(tileField[(randomX * 10) + randomY] != -1);
+		
+		tileDrops[mixingLoop].setPosition(randomX * 50 + randomX, randomY * 50 + randomY + 15);
+		tileXPos[mixingLoop] = randomX; tileYPos[mixingLoop] = randomY;
+		tileField[(randomX * 10) + randomY] = mixingLoop;
+	}
+	selectedDrop.setPosition(randomX * 50 + randomX - 1, randomY * 50 + randomY - 1);
+	userTimeCount = 0;
+}
+
+function userTime()
+{
+	userTimeCount++;
+}
+
+function writeMessage(newText)
+{
+	msgBox.drawText(0, 0, newText);
+}
+
+function moveTiles(rEvent) 
+{
+	if(solvingPuzzle) writeMessage("Time:  " + Math.floor(userTimeCount/60) + " mins, " + (userTimeCount - (Math.floor(userTimeCount/60)*60)) + " secs.          ");
+
+	if(tileMoving)
+	{
+		tileField[(tileXPos[selectedTile]*10)+tileYPos[selectedTile]] = -1;
+		tileXPos[selectedTile] = Math.floor(selectedTileLocation / 10);
+		tileYPos[selectedTile] = selectedTileLocation - (tileXPos[selectedTile] * 10);
+		tileField[(tileXPos[selectedTile]*10)+tileYPos[selectedTile]] = selectedTile;
+		tileDrops[selectedTile].setPosition(tileXPos[selectedTile] * 50 + tileXPos[selectedTile] - 5, tileYPos[selectedTile] * 50 + tileYPos[selectedTile] + 10);
+		selectedDrop.setPosition(tileXPos[selectedTile] * 50 + tileXPos[selectedTile], tileYPos[selectedTile] * 50 + tileYPos[selectedTile] + 15);
+		tileMoving = false;
+		if(!mouseSelected) selectedTile = -1;
+		return;
+	}
+}	
+
+function handleKeyEvent(event)
+{
+	if((!solvingPuzzle) && (event.getKeyState() == 0)) {
+		solvingPuzzle = true;
+		solveTimer = setInterval("userTime()", 1000);
+		mixTiles();
+	} else {
+		if((event.getKey()==32) && (event.getKeyState() == 0)) mixTiles();
+	}
+}
+
+function handleMouseEvent(event)
+{
+	var mouseX = Math.floor(event.getX() / 51);
+	var mouseY = event.getY();
+	if(mouseY > 508) mouseY = 508;
+	mouseY = Math.floor(mouseY / 51);
+	var thisLocation = (mouseX*10)+mouseY;
+
+	//if((event.getButtonState()!=1) && (mouseSelected) && (tileMoving)) mouseSelected = false;
+
+	if(tileMoving) return;
+	mouseBusy = true;
+	
+	if((event.getButtonState()==1) && (!mouseSelected) && (selectedTile == -1))
+	{
+		if(tileField[thisLocation] != -1)
+		{
+			selectedTile = tileField[thisLocation];
+			selectedTileLocation = thisLocation;
+			audioClips[0].start();
+			mouseSelected = true;
+			tileMoving = true;
+			camera.removeDrop(tileDrops[tileField[thisLocation]]);
+			tileDrops[tileField[thisLocation]] = camera.addDrop(tileImages[tileField[thisLocation]]);
+			moveTiles();
+		} else {
+			selectedTile = -1;
+		}
+		mouseBusy = false;
+		return;
+	} 
+	
+	if((event.getButtonState()==1) && (mouseSelected)) {
+		if(thisLocation != selectedTileLocation)
+		{
+			if(tileField[thisLocation] == -1)
+			{
+				selectedTileLocation = thisLocation;
+				tileMoving = true;
+				mouseBusy = false;
+				return;
+			}
+		}
+	}
+	
+	if((event.getButtonState()!=1) && (mouseSelected))
+	{
+		if(selectedTile != -1) {
+			if(tileField[thisLocation] == -1)
+			{
+				tileDrops[selectedTile].setPosition(tileXPos[selectedTile] * 50 + tileXPos[selectedTile], tileYPos[selectedTile] * 50 + tileYPos[selectedTile] + 15);
+				selectedDrop.setPosition(-150,-150);
+				selectedTileLocation = thisLocation;
+				tileMoving = true;
+				mouseSelected = false;
+				mouseBusy = false;
+				return;
+			}
+		}
+		tileDrops[selectedTile].setPosition(tileXPos[selectedTile] * 50 + tileXPos[selectedTile], tileYPos[selectedTile] * 50 + tileYPos[selectedTile] + 15);
+		selectedDrop.setPosition(-150,-150);
+		selectedTile = -1;
+		selectedTileLocation = -1;
+		mouseSelected = false;
+	}
+	mouseBusy = false;
+}
+//-->
+</SCRIPT>
+</P>
+
+</BODY>
+</HTML>

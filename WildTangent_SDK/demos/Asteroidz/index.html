@@ -1,0 +1,203 @@
+<HTML>
+<HEAD>
+	<TITLE>Asteroidz</TITLE>
+	<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="cookie.js"></SCRIPT>
+	<SCRIPT LANGUAGE="JavaScript1.2" src="index_scripts.js"></SCRIPT>
+	<style>
+		a:hover {text-decoration: none; color: Red;cursor: crosshair;}
+	</style>
+</HEAD>
+<BODY BGCOLOR="Black" text="White" link="White" onResize="ns_defaults();" vlink="White" alink="Red" onLoad="init();">
+
+<font face="Impact,Verdana,Arial" size="6" color="Silver"><i> A s t e r o i d z ! </i></font><br>
+<table width="100%" cellspacing="0" cellpadding="0">
+<tr>
+	<td bgcolor="Gray"><img src="images/blank.gif" border=0 alt="" width=1 height=1></td>
+</tr>
+</table>
+
+<table>
+<tr>
+	<td align="center">
+		<OBJECT id="wtScene" classid="CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3" width="200" height="200">
+			<EMBED type=application/x-wildtangent-web-driver name="wtScene" width="200" height="200"></EMBED>
+		</OBJECT><BR>
+<font face="Verdana" size="2" color="Red">[ Your Enemy. <b>Destroy Him!</b> ]</font>
+	</td>
+	<td>&nbsp;&nbsp;</td>
+	<td>
+		<font face="Verdana" size="2">
+		The universe needs your help!  A large group of Asteroids ("Global killers, not even bacteria will survive") have entered into your sector. You must fly your <b><i>Berreta-classed T-Bird Excelsior Piston Rod Assault Craft</i></b> into the Asteroid group, and <b>FLY!</b>  Coincidently, your <b><i>Berreta-classed T-Bird Excelsior Piston Rod Assault Craft</i></b> is equiped with highly-concentrated beams of lights that we prefer to call "lasers."  Try shooting these "lasers" too - they sometimes hit objects, but most of the time they don't.  If anything, enjoy the scenery, because it just doesn't get any better than this!<p>
+		Hurry Ace! We don't have much time!	Select your options and punch <b>LAUNCH!</b>
+	</font>	
+	</td>
+</tr>
+</table>
+
+<table width="100%" cellspacing="0" cellpadding="0">
+<tr>
+	<td bgcolor="Gray"><img src="images/blank.gif" border=0 alt="" width=1 height=1></td>
+</tr>
+</table>
+<p>
+<table width="100%">
+<tr>
+	<td width="50%" valign="top">
+		<font face="Verdana,Arial" size="4" color="Silver"><b>Starfield:</b></font><br>
+		<table>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:select_starfield(0);"><img name="starfield_0" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>High Density</b></font></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><a href="javascript:select_starfield(1);"><img name="starfield_1" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Medium Density</b></font></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><a href="javascript:select_starfield(2);"><img name="starfield_2" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Low Density</b></font></td>
+		</tr>
+		</table>
+		<p>
+		
+		<font face="Verdana,Arial" size="4" color="Silver"><b>Asteroidz:</b></font><br>
+		<table>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:select_asteroidz(0);"><img name="asteroidz_0" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Lots</b></font></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><a href="javascript:select_asteroidz(1);"><img name="asteroidz_1" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Some</b></font></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><a href="javascript:select_asteroidz(2);"><img name="asteroidz_2" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Not Lots</b></font></td>
+		</tr>
+		</table>
+		<p>
+
+		<font face="Verdana,Arial" size="4" color="White"><b>Controls:</b></font><br>
+		<font face="Verdana" size="2" color="Silver"><b>[In Case You're Interested]</b></font>
+		<table>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Pitch Up/Down:</b></font></td>
+			<td><font face="Arial" size="2">Up and Down Arrows</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Roll Left/Right:</b></font></td>
+			<td><font face="Arial" size="2">Left and Right Arrows</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Barrel Roll:</b></font></td>
+			<td><font face="Arial" size="2">Shift + Left and Right Arrows</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Throttle Up:</b></font></td>
+			<td><font face="Arial" size="2">'A' or +</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Throttle Down:</b></font></td>
+			<td><font face="Arial" size="2">'Z' or -</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>1/3 Throttle:</b></font></td>
+			<td><font face="Arial" size="2">'['</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>2/3 Throttle:</b></font></td>
+			<td><font face="Arial" size="2">']'</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Full Throttle:</b></font></td>
+			<td><font face="Arial" size="2">Backspace</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>No Throttle:</b></font></td>
+			<td><font face="Arial" size="2">'\'</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Fire "Lasers":</b></font></td>
+			<td><font face="Arial" size="2">SpaceBar</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Toggle Views:</b></font></td>
+			<td><font face="Arial" size="2">'V'</font></td>
+		</tr>
+		<tr bgcolor="#4a314a">
+			<td>&nbsp;&nbsp; -</td>
+			<td><font face="Arial" size="2"><b>Quit:</b></font></td>
+			<td><font face="Arial" size="2">'Q'</font></td>
+		</tr>
+		</table>
+		<p>
+
+	</td>
+	<td valign="top">
+		<font face="Verdana,Arial" size="4" color="Silver"><b>Optionz:</b></font><br>
+		<table>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:toggle_option(0);"><img name="option_0" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Space Trash</b></font></td>
+		</tr>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:toggle_option(1);"><img name="option_1" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Laser Lights</b></font></td>
+		</tr>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:toggle_option();"><img name="option_2" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Sound</b></font></td>
+		</tr>
+		</table>
+		<p></p>
+
+		<font face="Verdana,Arial" size="4" color="Silver"><b>Quik Picks:</b></font><br>
+		<table>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:quick_pick(0);"><img name="quick_pick_0" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Crazy-Fast Machine</b></font></td>
+		</tr>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:quick_pick(1);"><img name="quick_pick_1" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Average Joe Machine</b></font></td>
+		</tr>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="javascript:quick_pick(2);"><img name="quick_pick_2" src="images/open_circle.gif" border=0 alt=""></a></td>
+			<td><font face="Arial" size="3"><b>Computationally Challenged! </b></font></td>
+		</tr>
+		</table>		
+		<p></p>
+
+		<table border="5" cellspacing="0" cellpadding="2" style="border-color: #4a314a;">
+		<tr>
+			<td><font face="Impact,Verdana,Arial" size="6"><i><a href="javascript:submit_asteroidz();" onMouseover="javascript:urgent_flash();" onMouseOut="javascript:stop_flash();">LAUNCH!&nbsp;</a></i></font></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+</BODY>
+</HTML>

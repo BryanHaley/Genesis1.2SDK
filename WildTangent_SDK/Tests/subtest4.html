@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>WildTest 4: Animated Texture Test</title>
+</head>
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="tests_js.js"></script><body>
+<div align="Center">
+	<font size="5" face="Arial" color="Black"><b>Animated Texture Test</b></font>
+	<table>
+	<tr>
+		<td valign="top" align="center">
+		<object classid='clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3' ID='wtScene' width='300' height='300'><embed  type='application/x-wildtangent-web-driver' name='wtScene' width='300' height='300'></embed></object>
+
+		<form name="button"><input name="startTest" type="button" value="Loading..." onClick="beginTest();"> <input type="button" NAME="closer" value="Stop Test" onclick="javascript:self.close();"></form>
+		</td>
+		<TD VALIGN="top">
+			<b><font face="Arial" size="5" color="Gray">What You Should See:</font></b><br>
+			<table>
+			<tr>
+				<td><font face="Verdana" size="2"><b>
+				This test animates an image across a square surface.  It should be perfectly aligned from top to bottom as it moves from right to left, then left to right.  This tests the texture coordinate system.  An example of what you should see is shown below.
+				<UL>
+					<LI>Step 1:<BR>
+					<IMG SRC="images/4-1.jpg" WIDTH=150 HEIGHT=150 ALT="Step 1" BORDER="0">
+				</UL>
+
+				</b></font></td>
+			</tr>
+			</table>
+		</TD>
+	</tr>
+	</table>
+</div>
+
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+<!--
+var isDone = false;
+var tileDirection = false;
+var test_drop		= null;
+var test_bitmap		= null;
+var boxTexture1, boxTexture2;
+var box, box_frame;
+var tileXTexture = 0;
+
+function initHTML() 
+{
+	box_frame = scene.createContainer();
+	mainStage.addObject( box_frame );
+	box = scene.createBox(1,1,.5);
+	box_frame.attach( box );
+	test_bitmap = scene.createBitmap(jpg[3]);
+	boxTexture1 = scene.createBitmap(jpg_dir + "BoxTexture1.wjp");
+	boxTexture2 = scene.createBitmap(jpg_dir + "BoxTexture2.wjp");
+	box.setTexture(test_bitmap, "front" );
+	box.setTexture(boxTexture1, "top" );
+	box.setTexture(boxTexture2, "right" );
+	box.setTextureRect("front", 0,0, 1,1)
+	viewpoint.setPosition(-.7, .75, -1.5);
+	viewpoint.setLookAt(box_frame);
+}
+
+function rFunction(thisRender)
+{
+	var thisTime = new Date();
+	if(isDone)
+	{
+		return;
+	}
+
+	if(!test_bitmap.getIsLoaded())
+	{
+		return;
+	} else {
+		box.setTextureRect("front", tileXTexture, 0, 1 + tileXTexture, 1);
+		if(!tileDirection)
+		{
+			tileXTexture += .03;
+			if(tileXTexture >= 5)
+				tileDirection = true;
+		} else {
+			tileXTexture -= .03;
+			if(tileXTexture <= 0) 
+			{
+				status_info.setColor(255,0,0);
+				status_info.drawText(0,0, "DONE!" );
+				document.button.closer.value = "Finished!";
+				box.setTexture( scene.createBitmap( jpg_dir + "Finished.wjp"), "front");
+				isDone = true;
+			}
+		}
+	}
+}
+//-->
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=wtScene EVENT="WTRenderEvent(renderEvent)">
+<!--
+	if(is_ie4up || is_aol4)
+	  rFunction(renderEvent);
+//-->
+</SCRIPT>
+
+</body>
+</html>

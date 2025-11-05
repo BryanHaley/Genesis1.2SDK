@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>WildTest 5: Positioning, Remove, and Adding Objects</title>
+</head>
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="tests_js.js"></script>
+<body>
+<div align="Center">
+	<font size="5" face="Arial" color="Black"><b>Positioning, Remove, and Adding Objects</b></font>
+	<table>
+	<tr>
+		<TD ALIGN="center" VALIGN="top">
+		<object classid='clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3' ID='wtScene' width='300' height='300'><embed  type='application/x-wildtangent-web-driver' name='wtScene' width='300' height='300'></embed></object>
+
+		<form name="button"><input name="startTest" type="button" value="Loading..." onClick="beginTest();"> <input type="button" NAME="closer" value="Stop Test" onclick="javascript:self.close();"></form>
+		</TD>
+		<TD VALIGN="top">
+			<b><font face="Arial" size="5" color="Gray">What You Should See:</font></b><br>
+			<table>
+			<tr>
+				<td><font face="Verdana" size="2"><b>
+This test positions a group of three primitive objects (without textures) at random locations in the scene:
+<UL>
+	<LI>Steps 1-9:  For the first portion of the test, objects will be positioned in visible areas of the scene.<BR>
+	<IMG SRC="images/5-1.jpg" WIDTH=150 HEIGHT=150 ALT="Step 1" BORDER="0">
+	<LI>Steps 10 - 14:  For the second portion of the test, objects will be positioned outside the visible areas of the scene.  Their coordinates will still be reported.<BR>
+	<IMG SRC="images/5-2.jpg" WIDTH=150 HEIGHT=150 ALT="Step 2" BORDER="0">
+	<LI>Step 16:  The objects are added and removed from the scene, first in sequence, then as a group.<BR>
+	<IMG SRC="images/5-3.jpg" WIDTH=150 HEIGHT=150 ALT="Step 3" BORDER="0">
+</UL>
+
+
+				</b></font></td>
+			</tr>
+			</table>
+		</TD>
+	</tr>
+	</table>
+</div>
+
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+<!--
+var box, boxFrame, cyl, cylFrame, cone, coneFrame, objectGroup;
+var isDone = false;
+var tempVector;
+var totalFrames, keyFrame, distanceX, distanceY, distanceZ;
+var curX, curY, curZ, newX, newY, newZ;
+var set = 0;
+var objectNumber= 0;
+var reset = false;
+var startTime;
+var isMoving = false;
+
+function initHTML() 
+{
+	status_info.setTextColor(0, 255, 0);
+	status_info.drawText(0,scene_height-20, "Position: x:0 y:0 z:0" );
+	curX = curY = curZ = 0;
+	newX = newY = newZ = -1;
+	keyFrame = 1;
+	totalFrames = 0;
+
+	objectGroup = scene.createGroup();
+	
+	cylFrame = scene.createContainer();
+	cyl = scene.createCylinder(.5,.25, 30,0);
+	cyl.setColor(255, 120, 120);
+	objectGroup.addObject(cylFrame);
+	cylFrame.attach( cyl );
+	cylFrame.setAbsolutePosition(.525,0,0);
+	
+	coneFrame = scene.createContainer();
+	cone = scene.createCone(.5,.25,4,0);
+	cone.setColor(120, 255, 120);
+	objectGroup.addObject(coneFrame);
+	coneFrame.attach(cone);
+	coneFrame.setAbsolutePosition(-.5,-.25,0);
+	
+	box = scene.createBox( .5, .5, .1);
+	box.setColor(120, 120, 255);
+	boxFrame = scene.createContainer();
+	objectGroup.addObject(boxFrame);
+	boxFrame.attach(box);
+	boxFrame.setAbsolutePosition(0,0,0);
+	
+	mainStage.addObject(objectGroup);
+}
+
+function rFunction(thisRender)
+{
+	var thisTime = new Date();
+	var thisX, thisY, thisZ, rightNow;
+
+	if(isDone)
+	{
+		return;
+	}
+	
+	if(set < 10)
+	{
+		if(!isMoving)
+		{
+			tempVector = objectGroup.getPosition();
+			curX = tempVector.getX();
+			curY = tempVector.getY();
+			curZ = tempVector.getZ();
+			newX = (Math.random() - .5) * 2;
+			newY = (Math.random() - .5) * 2;
+			newZ = Math.random() * 2;
+			distanceX = newX - curX;
+			distanceY = newY - curY;
+			distanceZ = newZ - curZ;
+			status_info.setColor(255,0,0);
+			status_info.drawText(0,0, "Moving to Point " + set);
+			status_info.drawText(0,15, "X:" + newX.toString().substring(0, 6) + " Y:" + newY.toString().substring(0, 6) + " Z:" + newZ.toString().substring(0, 6));
+			totalFrames = 750;
+			set++;
+			isMoving = true;
+			startTime = thisTime.getTime();
+		} else {
+			keyFrame = thisTime.getTime();
+			thisX = distanceX * (keyFrame - startTime) / totalFrames + curX;
+			thisY = distanceY * (keyFrame - startTime) / totalFrames + curY;
+			thisZ = distanceZ * (keyFrame - startTime) / totalFrames + curZ;
+			objectGroup.setPosition(thisX, thisY, thisZ);
+			if((keyFrame - startTime) >= totalFrames) isMoving = false;
+		}
+	}
+
+	if(set >= 10 && set < 16)
+	{
+		if(!isMoving)
+		{
+			tempVector = objectGroup.getPosition();
+			curX = tempVector.getX();
+			curY = tempVector.getY();
+			curZ = tempVector.getZ();
+			newX = (Math.random() - .5) * 10000;
+			newY = (Math.random() - .5) * 10000;
+			newZ = Math.random() * 10000;
+			distanceX = newX - curX;
+			distanceY = newY - curY;
+			distanceZ = newZ - curZ;
+			status_info.setColor(255,0,0);
+			status_info.drawText(0,0, "Moving to Point " + set);
+			status_info.drawText(0,15, "X:" + newX.toString().substring(0, 6) + " Y:" + newY.toString().substring(0, 6) + " Z:" + newZ.toString().substring(0, 6));
+			totalFrames = 750;
+			set++;
+			isMoving = true;
+			startTime = thisTime.getTime();
+		} else {
+			keyFrame = thisTime.getTime();
+			thisX = distanceX * (keyFrame - startTime) / totalFrames + curX;
+			thisY = distanceY * (keyFrame - startTime) / totalFrames + curY;
+			thisZ = distanceZ * (keyFrame - startTime) / totalFrames + curZ;
+			objectGroup.setPosition(thisX, thisY, thisZ);
+			if((keyFrame - startTime) >= totalFrames) isMoving = false;
+		}
+	}
+
+	if(set == 16)
+	{
+		objectGroup.setPosition(0, 0, 0);
+		objectGroup.removeObject(cylFrame);
+		objectGroup.removeObject(boxFrame);
+		status_info.setColor(255,0,0);
+		status_info.drawText(0,0, "Adding/Removing");
+		set++;
+	}
+	
+	if(set >= 17 && set < 30)
+	{
+		if(thisTime.getTime() >= startTime + 200)
+		{
+			isMoving = true;
+			startTime = thisTime.getTime();
+			switch (objectNumber)
+			{
+				case 0:
+					objectGroup.removeObject(coneFrame);
+					objectGroup.addObject(cylFrame);
+					cylFrame.setAbsolutePosition(.525,0,0);
+					break;
+				case 1:
+					objectGroup.removeObject(cylFrame);
+					objectGroup.addObject(boxFrame);
+					boxFrame.setAbsolutePosition(0,0,0);
+					break;
+				default:
+					objectGroup.removeObject(boxFrame);
+					objectGroup.addObject(coneFrame);
+					coneFrame.setAbsolutePosition(-.5,-.25,0);
+					break;
+			}
+			objectNumber++;
+			if(objectNumber >= 3) objectNumber = 0;
+			set++;
+		}
+	}
+
+	if(set == 30)
+	{
+		objectGroup.addObject(cylFrame);
+		cylFrame.setAbsolutePosition(.525,0,0);
+		objectGroup.addObject(boxFrame);
+		boxFrame.setAbsolutePosition(0,0,0);
+		objectGroup.addObject(coneFrame);
+		coneFrame.setAbsolutePosition(-.5,-.25,0);
+		objectNumber = false;
+		startTime = thisTime.getTime();
+		set++;
+	}
+
+	if(set >= 31 && set < 41)
+	{
+		if(thisTime.getTime() >= startTime + 500)
+		{
+			startTime = thisTime.getTime();
+			if (!objectNumber)
+			{
+				objectGroup.removeObject(coneFrame);
+				objectGroup.removeObject(cylFrame);
+				objectGroup.removeObject(boxFrame);
+				objectNumber = true;
+			} else {
+				objectGroup.addObject(cylFrame);
+				cylFrame.setAbsolutePosition(.525,0,0);
+				objectGroup.addObject(boxFrame);
+				boxFrame.setAbsolutePosition(0,0,0);
+				objectGroup.addObject(coneFrame);
+				coneFrame.setAbsolutePosition(-.5,-.25,0);
+				objectNumber = false;
+			}
+			set++;
+		}
+	}
+
+	if(set == 41)
+	{
+		status_info.setColor(255,0,0);
+		status_info.drawText(0,0, "DONE!" );
+		document.button.closer.value = "Finished!";
+		box.setTexture( scene.createBitmap( jpg_dir + "Finished.wjp"));
+		isDone = true;
+		return;
+	}
+}
+//-->
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=wtScene EVENT="WTRenderEvent(renderEvent)">
+<!--
+	if(is_ie4up || is_aol4)
+	  rFunction(renderEvent);
+//-->
+</SCRIPT>
+
+</body>
+</html>

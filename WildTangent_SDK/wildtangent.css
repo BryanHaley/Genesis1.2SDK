@@ -1,0 +1,121 @@
+BODY {
+	margin-top: 		0px;
+	margin-bottom: 		0px;
+}
+
+BODY, P,TD,TH {
+	font-family: 		Trebuchet MS, Verdana, Arial, Helvetica;
+	font-size: 			10pt;
+	color: 				Black;
+}
+.description {
+	font-family: 		Trebuchet MS, Verdana, Arial, Helvetica;
+	font-size: 			10pt;
+	color: 				Black;
+}
+INPUT {
+	font-family: 		Courier New;
+}
+
+.announcement {
+	font-family: 		Trebuchet MS, Verdana, Arial;
+	font-size:			7pt;
+	font-weight:		bold;
+}
+
+UL, OL {
+	position: relative;
+	left: -25px;
+}
+
+/* Used for Formz */
+.fieldDesc {
+	font-family: 		Trebuchet MS, Verdana, Arial;
+	font-size:			8pt;
+	font-weight:		bold;
+}
+
+.datafield { 
+	font-family: 		Trebuchet MS, Verdana, Arial;
+	font-size:			8pt;
+	font-weight:		bold;
+	text-align:			left;
+	color:				white;
+	background-color:	#330066 ;
+}
+
+.bodycontent {
+	margin-top:			30px;
+	margin-left: 		20px;
+	margin-right:		20px;
+}
+
+.bigTitle {
+	font-family: 		Trebuchet MS, Arial, Helvetica;
+	font-size:   		20pt;
+}
+
+.headerTitle {
+	margin-top:			10px;
+	margin-bottom:		0px;
+	font-family: 		Trebuchet MS, Arial, Helvetica;
+	font-size:   		16pt;
+}
+
+.sectionListing {
+	width:   			100%;
+}
+
+.sectionTitle {
+	font-family: 		Trebuchet MS, Arial, Helvetica;
+	font-size:   		12pt;
+	font-weight:		bold;
+	color:		 		Black;
+}
+.sectionDescription {
+	margin-top:			10px;
+	margin-right: 		10px;
+}
+
+
+.itemTitle {
+	font-family: 		Trebuchet MS, Arial, Helvetica;
+	font-size:   		12pt;
+	font-weight: 		bold;
+	color:		 		Silver;
+	background-color:	#330066;
+}
+
+.subnav {
+	margin-top:			5px;
+	margin-bottom:		5px;
+	font-family: 		Trebuchet MS, Verdana, Arial, Helvetica;
+	font-size:			10pt;
+}
+
+.subnav:link {
+	text-decoration:	none;
+}
+
+.legalcontract {
+	font-family: 		Times, Trebuchet MS, Arial, Helvetica;
+	font-size:   		10pt;
+}
+
+.footnote {
+	font-family: 		Trebuchet MS, Arial, Helvetica;
+	font-size:   		8pt;
+}
+
+IMG {
+	border: 			0;
+	margin-left: 		0px;
+	margin-right: 		0px;
+	padding: 			0px;
+}
+ 
+A:visited { color: #4A314A;}
+A:link 	  { color: #633F5B;}
+A:active  { color: #FF0000;}
+A:hover	  { color: #3366CC;}
+

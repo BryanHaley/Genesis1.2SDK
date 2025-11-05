@@ -1,0 +1,732 @@
+<HTML>
+<HEAD>
+<TITLE>Wild Logo</TITLE>
+</HEAD>
+<BODY bgcolor="#0000FF" leftmargin=0 topmargin=0 rightmargin=0 bottommargin=0>
+	<OBJECT CLASSID=CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3 ID='wtObject' width='800' height='600'>
+	     <EMBED  type='application/x-wildtangent-web-driver' name='wtObject' width='800' height='600'></EMBED>
+	</OBJECT>
+</BODY>
+
+<!-- Init the wtObjects... //-->
+<SCRIPT LANGUAGE=javascript>
+var wtObj, stage, camera, ambLight, ambLight2, wLightPos, wLightDir, loadingBitmap, loadingDrop;
+var timeCounter = 0;
+var cCamera, cBackground, cBackgroudDrop, helpBackground, helpDrop;
+var wCamera, wBackground, wBackgroudDrop;
+var text1, text2, text3, text4, text5, text6, text7, text1D, text2D, text3D, text4D, text5D, text6D, text7D;
+var worldSpin, wCameraYDown, wCameraYUp, xOrbit, xOrbitUp, xOrbitDown, yOrbit, yOrbitUp, yOrbitDown, zOrbit, zOrbitUp, zOrbitDown;
+var wCameraXPos, wCameraYPos, wCameraZPos, wCameraXLookBase, wCameraYLookBase, wCameraZLookBase, doWorldSpin;
+var xOrbitSpeed, xOrbitSpeedUp, xOrbitSpeedDown, yOrbitSpeed, yOrbitSpeedUp, yOrbitSpeedDown, zOrbitSpeed, zOrbitSpeedUp, zOrbitSpeedDown;
+var helpLatch = false;
+var notReady = true;
+var ie = false;
+var ns = false;
+var windowed = true;
+var topDownView = true;
+var playSound = false;
+var renderCount = 0;
+var lastRenderDisplay = 0;
+var Letters = new Array(15);
+var LetterMeshes = new Array(15);
+var LetterTextures = new Array(15);
+var sleeping = true;
+
+function loadLetter(letterNum, letterName, textureName)
+{
+	LetterMeshes[letterNum] = wtObj.createModel(letterName);
+	if(textureName != "") 
+	{
+		LetterTextures[letterNum] = wtObj.createBitmap(textureName);
+		LetterMeshes[letterNum].setTexture(LetterTextures[letterNum]);
+	}
+	Letters[letterNum].attach(LetterMeshes[letterNum]);
+}
+
+function addLetters()
+{
+	var thisTime = new Date();
+	for(addLoop = 0; addLoop < 11; addLoop++)
+		stage.addObject(Letters[addLoop]);
+	stage.addObject(Letters[11]);
+	Letters[11].setRotation(1, 0, 0, 270);
+	Letters[11].setPosition(0, -120, 250);
+	Letters[0].setPosition(-130, -20, 300);
+	Letters[1].setPosition(-95, -20, 300);
+	Letters[2].setPosition(-45, -20, 300);
+	Letters[3].setPosition(0, -10, 300);
+	Letters[4].setPosition( 50, -20, 300);
+	Letters[5].setPosition( 100, -20, 300);
+	Letters[6].setPosition(140, -20, 300);
+	Letters[7].setPosition(-60, 40, 200);
+	Letters[8].setPosition(0, 40, 200);
+	Letters[9].setPosition(30, 40, 200);
+	Letters[10].setPosition(70, 40, 200);
+	lastRenderTime = thisTime.getTime();
+	notReady = false;
+
+	backImage.setColor(0, 0, 64);
+	backImage.setTextHeight(8);
+	backImage.drawText(backDrop.getBitmapWidth() - 170, 5, "Press and hold 'H' for help...");
+	cCamera.removeDrop(helpDrop);
+	cBackgroundDrop = cCamera.addDrop(cBackground);
+	text1D = cCamera.addDrop(text1);
+	text1D.setPosition(20, 20);
+	text2D = cCamera.addDrop(text2);
+	text2D.setPosition(20, 80);
+	text3D = cCamera.addDrop(text3);
+	text3D.setPosition(20, 140);
+	text4D = cCamera.addDrop(text4);
+	text4D.setPosition(20, 200);
+	text5D = cCamera.addDrop(text5);
+	text5D.setPosition(20, 260);
+	wtObj.focus();
+
+}
+
+function cameraSleep()
+{
+	camera.suspend();
+	wCamera.suspend();
+	cCamera.suspend();
+}
+
+function checkLoaded()
+{
+	if(!LetterMeshes[10].getIsLoaded()) {
+		setTimeout("checkLoaded();", 500);
+	} else {
+		addLetters();
+	}
+}
+
+function init() {
+	timeCounter = 0;
+	wtObj = document.wtObject;
+
+	//wtObj.setResolution(800, 600, 16);
+	wLightDir = 0;
+	wLightPos = 0;
+	worldSpin = 1;
+	doWorldSpin = true;
+	if(document.layers) ns=true;
+	if(document.all) ie=true;
+	xOrbitUp = xOrbitDown = xOrbitSpeedUp = xOrbitSpeedDown = false;
+	xOrbit = 400;
+	xOrbitSpeed = 2000;
+	yOrbitUp = yOrbitDown = yOrbitSpeedUp = yOrbitSpeedDown = false;
+	yOrbit = 100;
+	yOrbitSpeed = 2000;
+	zOrbitUp = zOrbitDown = zOrbitSpeedUp = zOrbitSpeedDown = false;
+	zOrbit = 400;
+	zOrbitSpeed = 2000;
+	stage = wtObj.createStage();
+	stage.setFogStartDistance(680);
+	stage.setFogEndDistance(1000);
+	stage.setFogDensity(.1);
+	stage.setFogColor(0, 0, 64);
+	stage.setFogEnabled(true);
+
+	camera = stage.createCamera();
+	camera.setViewRect(200, 0, 600, 600);
+	camera.setPosition(0, 4, -11);
+	camera.setName("Main View");
+
+	backImage = wtObj.createBlankBitmap(600, 600);
+	backImage.setColor(0, 0, 64);
+	backImage.setColorKey(255, 0, 0);
+	backImage.setTextBkColor(0, 0, 64);
+	backImage.setTextColor(128, 128, 100);
+	backImage.setTextFace("Tahoma,Arial");
+	backImage.setTextHeight(25);
+	backImage.drawText(5, 5, "Loading...  Please wait...");
+	backDrop = camera.addDrop(backImage);
+
+	wCamera = stage.createCamera();
+	wCamera.setViewRect(0, 0, 200, 200);
+	wCamera.setPosition(0, 200, 0);
+	wCameraXPos = 0;
+	wCameraYPos = 200;
+	wCameraZPos = 0;
+	wCameraXLookBase = wCameraYLookBase = -1;
+	wCameraYDown = wCameraYUp = false;
+	wCamera.setName("Top Down View");
+
+	cCamera = stage.createCamera();
+	cCamera.setViewRect(0, 200, 200, 400);
+	cCamera.setName("Command Menu");
+	cCamera.setPosition(0, 0, -10000);
+
+	wBackground = wtObj.createBitmap("cameraCover.wjp");
+	wBackgroundDrop = wCamera.addDrop(wBackground, false);
+	wBackgroundDrop.setSize(200, 200);
+
+	cBackground = wtObj.createBitmap("CommandDrop.wjp");
+	helpBackground = wtObj.createBlankBitmap(200, 400);
+	helpBackground.setColor(0, 0, 64);
+	helpBackground.setColorKey(255, 0, 0);
+	helpBackground.setTextBkColor(255, 0, 0);
+	helpBackground.setTextFace("Tahoma,Arial");
+	helpBackground.setTextColor(128, 128, 100);
+	helpBackground.setTextHeight(8);
+	helpDrop = cCamera.addDrop(helpBackground);
+
+	text1 = wtObj.createBitmap("Direction.wpg");
+	text1.setColorKey(255, 0, 0);
+	text2 = wtObj.createBitmap("Freeze.wpg");
+	text2.setColorKey(255, 0, 0);
+	text3 = wtObj.createBitmap("XOrbit.wpg");
+	text3.setColorKey(255, 0, 0);
+	text4 = wtObj.createBitmap("YOrbit.wpg");
+	text4.setColorKey(255, 0, 0);
+	text5 = wtObj.createBitmap("ZOrbit.wpg");
+	text5.setColorKey(255, 0, 0);
+	text6 = wtObj.createBlankBitmap(160, 50);
+	text6.setColor(255, 0, 0);
+	text6.setColorKey(255, 0, 0);
+	text6.setTextBkColor(255, 0, 0);
+	text6.setTextColor(0, 0, 0);
+	text6.setTextFace("arial");
+	text6.setTextHeight(12);
+	text6D = cCamera.addDrop(text6, true);
+	text6D.setPosition(20, 320);
+	text7 = wtObj.createBlankBitmap(60, 30);
+	text7.setColor(255, 0, 0);
+	text7.setColorKey(255, 0, 0);
+	text7.setTextBkColor(255, 0, 0);
+	text7.setTextColor(255, 255, 255);
+	text7.setTextFace("arial");
+	text7.setTextHeight(8);
+	text7D = camera.addDrop(text7, true);
+	text7D.setPosition(300, 10);
+
+	ambLight = wtObj.createLight(1);
+	ambLight.setName("Ambient Light");
+	ambLight.setColor(0, 0, 255);
+	ambLight.setLinearAttenuation(.005);
+	stage.addObject(ambLight);
+	ambLight.setPosition(-150, -30, 250);
+	ambLight2 = wtObj.createLight(1);
+	ambLight2.setName("Ambient Light 2");
+	ambLight2.setColor(255, 0, 0);
+	stage.addObject(ambLight2);
+	ambLight2.setPosition(150, 40, 200);
+	ambLight2.setConstantAttenuation(.1);
+	ambLight2.setLinearAttenuation(.001);
+	ambLight3 = wtObj.createLight(0);
+	ambLight3.setName("Ambient Light 3");
+	ambLight3.setColor(50, 50, 50);
+	stage.addObject(ambLight3);
+	ambLight3.setPosition(0, 0, 0);
+
+	for(addLoop = 0; addLoop < 13; addLoop++)
+	{
+		Letters[addLoop] = wtObj.createContainer();
+		Letters[addLoop].setName("Letter " + addLoop);
+	}
+	loadLetter(0, "T.wt", "");
+	loadLetter(1, "a.wt", "");
+	loadLetter(2, "n.wt", "");
+	loadLetter(3, "g.wt", "LTexture.wjp");  //
+	loadLetter(4, "e.wt", "");
+	loadLetter(5, "n.wt", "");
+	loadLetter(6, "lt.wt", "");
+	loadLetter(7, "W.wt", "LTexture.wjp");  //
+	loadLetter(8, "i.wt", "");
+	loadLetter(9, "l.wt", "");
+	loadLetter(10, "d.wt", "");
+
+	LetterMeshes[11] = wtObj.createModel("LandScape1.wt");
+	Letters[11].setRotation(1, 0, 0, 270);
+	LetterMeshes[11].setScale(4, 2, 4);
+	Letters[11].attach(LetterMeshes[11]);
+	LetterTextures[11] = wtObj.createBitmap("landtex1.wjp");
+	LetterMeshes[11].setTexture(LetterTextures[11]);
+
+	if(ns)
+	{
+		wtObj.setOnKeyboardEvent("kFunction");
+		wtObj.setOnMouseEvent("mFunction");
+		wtObj.setOnRenderEvent("rFunction");
+	}
+
+	wtObj.setNotifyMouseEvent(1);
+	wtObj.setNotifyRenderEvent(true);
+	wtObj.setNotifyKeyboardEvent(true);
+	camera.setLookAt(Letters[3]);
+
+	wCamera.setOrientation(1, 0, 0, 90);
+
+	Letters[0].setConstantRotation(1, 0, 0, 45)
+	Letters[1].setConstantRotation(0, 1, 0, 76)
+	Letters[2].setConstantRotation(0, 0, 1, 30)
+	Letters[3].setConstantRotation(0, 1, 0, 50)
+	Letters[4].setConstantRotation(1, 0, 0, 100)
+	Letters[5].setConstantRotation(0, 1, 0, 20)
+	Letters[6].setConstantRotation(1, 1, 1, 30)
+	Letters[8].setConstantRotation(0, 1, 0, 10)
+	Letters[9].setConstantRotation(0, 1, 0, 10)
+
+
+	wtObj.start();	
+	setTimeout("checkLoaded()", 500);
+	setTimeout("cameraSleep()", 100);
+}
+
+window.onload = init;
+
+function rFunction(thisRender)
+{
+	var thisTime = new Date();
+
+	if(notReady)
+	{
+		return;
+	}
+
+	if(sleeping)
+	{
+		camera.resume();
+		wCamera.resume();
+		cCamera.resume();
+		sleeping = false;
+	}
+
+	renderCount++;
+	if (thisTime.getTime() - lastRenderTime >= 5000)
+	{
+		text7.setColor(255, 0, 0);
+		text7.drawText(0, 0, Math.ceil(renderCount / 5));
+		lastRenderTime = thisTime.getTime();
+		renderCount = 0;
+	}
+
+	if(xOrbitDown && xOrbit > 20) {
+		xOrbit -= 10;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, xOrbit);
+	}
+
+	if(xOrbitUp && xOrbit < 1000) {
+		xOrbit += 10;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, xOrbit);
+	}
+
+	if(xOrbitSpeedDown && xOrbitSpeed < 10000) {
+		xOrbitSpeed += 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, xOrbitSpeed);
+	}
+
+	if(xOrbitSpeedUp && xOrbitSpeed > 100) {
+		xOrbitSpeed -= 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, xOrbitSpeed);
+	}
+
+	if(yOrbitDown && yOrbit > 20) {
+		yOrbit -= 5;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, yOrbit);
+	}
+
+	if(yOrbitUp && yOrbit < 200) {
+		yOrbit += 5;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, yOrbit);
+	}
+
+	if(yOrbitSpeedDown && yOrbitSpeed < 10000) {
+		yOrbitSpeed += 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, yOrbitSpeed);
+	}
+
+	if(yOrbitSpeedUp && yOrbitSpeed > 100) {
+		yOrbitSpeed -= 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, yOrbitSpeed);
+	}
+
+	if(zOrbitDown && zOrbit > 20) {
+		zOrbit -= 10;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, zOrbit);
+	}
+
+	if(zOrbitUp && zOrbit < 1000) {
+		zOrbit += 10;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, zOrbit);
+	}
+
+	if(zOrbitSpeedDown && zOrbitSpeed < 10000) {
+		zOrbitSpeed += 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, zOrbitSpeed);
+	}
+
+	if(zOrbitSpeedUp && zOrbitSpeed > 100) {
+		zOrbitSpeed -= 50;
+		text6.setColor(255, 0, 0);
+		text6.drawText(0, 0, zOrbitSpeed);
+	}
+
+	if(doWorldSpin)
+	{
+		if(thisRender.getInterval() < 0) status = thisRender.getInterval();
+		timeCounter += thisRender.getInterval();
+		var newX = (Math.sin(timeCounter/(xOrbitSpeed*worldSpin))*xOrbit) + 0;
+		var newY = Math.sin(timeCounter/(yOrbitSpeed*worldSpin)+Math.PI)*yOrbit + 10;
+		var newZ = (Math.cos(timeCounter/(zOrbitSpeed*worldSpin))*zOrbit) + 300;
+		camera.setPosition(newX, newY, newZ);
+		ambLight2.setPosition(newX, newY, newZ);
+	}
+
+	if(wLightDir == 0)
+	{
+		wLightPos += 10;
+		ambLight.setPosition(wLightPos, -90, 250);
+		if(wLightPos > 300) wLightDir = 1;
+	} else {
+		wLightPos -= 10;
+		ambLight.setPosition(wLightPos, -90, 250);
+		if(wLightPos < -300) wLightDir = 0;
+	}
+}
+
+function kFunction(keyEvent)
+{
+	if(notReady) return;
+	var outText = "";
+	status = keyEvent.getKey();
+
+	if (keyEvent.getKey() == 32 && keyEvent.getKeyState() == 1) 	
+		wtObj.setResolution(800, 600, 16);
+	if (keyEvent.getKey() == 72)
+	{
+		if(keyEvent.getKeyState() == 1 && !helpLatch) 
+		{
+			helpLatch = true;
+			backImage.setColor(0, 0, 64);
+			backImage.setTextHeight(8);
+			backImage.setColor(0, 0, 64);
+			backImage.setTextHeight(8);
+			backImage.drawText(5, 5, "Top Left Window:");
+			backImage.drawText(15, 20, "Left Mouse Button + Mouse Movement = Pan View");
+			backImage.drawText(15, 35, "Right Mouse Button + Mouse Movement = Zoom View");
+			backImage.drawText(5, 50, "Bottom Left Window:");
+			backImage.drawText(15, 65, "Use the command buttons to control the Right Window");
+			backImage.drawText(5, 90, "Press T to suspend/resume the top left camera.");
+			backImage.drawText(5, 120, "Press W to toggle single/multi camera view.");
+			backImage.drawText(15, 135, "In single camera view, the arrow keys control the orbit.");
+			backImage.drawText(5, 160, "Press the spacebar to toggle full screen mode.");
+			backImage.drawText(5, 185, "The number you see in the middle of the Right Window is the current Frames Per Second");
+			backImage.drawText(15, 200, "the higher the better!");
+		}
+		if(keyEvent.getKeyState() == 0)
+		{
+			helpLatch = false;
+			backImage.setColor(0, 0, 64);
+			backImage.setTextHeight(8);
+			backImage.drawText(backDrop.getBitmapWidth() - 170, 5, "Press and hold 'H' for help...");
+		}
+	}
+
+	if(keyEvent.getKey() == 70 && keyEvent.getKeyState() == 1 && !windowed)
+	{
+		if(doWorldSpin)
+		{
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Frozen");
+			doWorldSpin = false;
+		} else {
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Unfrozen");
+			doWorldSpin = true;
+		}
+	}
+
+	if(keyEvent.getKey() == 84 && keyEvent.getKeyState() == 1)
+	{
+		if(!topDownView) {
+			wCamera.resume();
+			topDownView = true;
+		} else {
+			wCamera.suspend(false);
+			topDownView = false;
+		}
+	}
+
+	if(keyEvent.getKey() == 38 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			zOrbitUp = true;		
+		else
+			zOrbitUp = false;
+	}
+
+	if(keyEvent.getKey() == 40 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			zOrbitDown = true;		
+		else
+			zOrbitDown = false;
+	}
+
+	if(keyEvent.getKey() == 37 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			xOrbitUp = true;		
+		else
+			xOrbitUp = false;
+	}
+
+	if(keyEvent.getKey() == 39 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			xOrbitDown = true;		
+		else
+			xOrbitDown = false;
+	}
+
+	if(keyEvent.getKey() == 33 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			yOrbitUp = true;		
+		else
+			yOrbitUp = false;
+	}
+
+	if(keyEvent.getKey() == 34 && !windowed)
+	{
+		if(keyEvent.getKeyState() == 1)
+			yOrbitDown = true;		
+		else
+			yOrbitDown = false;
+	}
+
+	if(keyEvent.getKey() == 87 && keyEvent.getKeyState() == 1)
+	{
+		if(windowed)
+		{
+			windowed = false;
+			wCamera.suspend(false);
+			cCamera.suspend(false);
+			camera.setViewRect(0, 0, 800, 600);
+			camera.removeDrop(backDrop);
+			backImage = wtObj.createBlankBitmap(800, 600);
+			backImage.setColor(0, 0, 64);
+			backImage.setColorKey(255, 0, 0);
+			backImage.setTextBkColor(0, 0, 64);
+			backImage.setTextColor(128, 128, 100);
+			backImage.setTextFace("Tahoma,Arial");
+			backImage.setTextHeight(8);
+			backDrop = camera.addDrop(backImage);
+			backImage.drawText(backDrop.getBitmapWidth() - 170, 5, "Press and hold 'H' for help...");
+			text7D.setPosition(400, 10);
+		} else {
+			windowed = true;
+			camera.removeDrop(backDrop);
+			camera.setViewRect(200, 0, 600, 600);
+			cCamera.resume();
+			wCamera.resume();
+			backImage = wtObj.createBlankBitmap(600, 600);
+			backImage.setColor(0, 0, 64);
+			backImage.setColorKey(255, 0, 0);
+			backImage.setTextBkColor(0, 0, 64);
+			backImage.setTextColor(128, 128, 100);
+			backImage.setTextFace("Tahoma,Arial");
+			backImage.setTextHeight(8);
+			backDrop = camera.addDrop(backImage);
+			backImage.drawText(backDrop.getBitmapWidth() - 170, 5, "Press and hold 'H' for help...");
+			text7D.setPosition(300, 10);
+		}
+	}
+}
+
+function mFunction(mouseEvent)
+{
+	var klickX = mouseEvent.getWTX();
+	var klickY = mouseEvent.getWTY();
+	var button1 = mouseEvent.getButtonState() & 1;
+	var button2 = mouseEvent.getButtonState() & 2;
+
+	if(!windowed) return;
+
+	if(klickX <= 200 && klickY <= 200 && topDownView)
+	{
+		if(button1 == 1)
+		{
+			if (wCameraXLookBase == -1)
+			{
+				wCameraXLookBase = klickX;
+				wCameraZLookBase = klickY;
+			} else {
+				wCameraXPos +=  (klickX - wCameraXLookBase) * 2;
+				wCameraZPos += (klickY - wCameraZLookBase) * 2;
+				if(wCameraXPos < -700) wCameraXPos = -700;
+				if(wCameraXPos > 700) wCameraXPos = 700;
+				if(wCameraZPos < -700) wCameraZPos = -700;
+				if(wCameraZPos > 1500) wCameraZPos = 1500;
+				wCameraXLookBase = klickX;
+				wCameraZLookBase = klickY;
+				wCamera.setPosition(wCameraXPos, wCameraYPos, wCameraZPos);
+			}
+		} else {
+			wCameraXLookBase = -1;
+			wCameraZLookBase = -1;
+		}
+
+		if(button2 == 2)
+		{
+			if (wCameraYLookBase == -1)
+			{
+				wCameraYLookBase = klickY;
+			} else {
+				wCameraYPos += (klickY - wCameraYLookBase) * 2;
+				if(wCameraYPos < 20) wCameraYPos = 20;
+				if(wCameraYPos > 750) wCameraYPos = 750;
+				wCameraYLookBase = klickY;
+				wCamera.setPosition(wCameraXPos, wCameraYPos, wCameraZPos);
+			}
+		} else {
+			wCameraYLookBase = -1;
+		}
+	}
+
+	if(button1 == 1 && (wCameraYLookBase != -1 || wCameraXLookBase != -1)) return;
+	if(button1 == 1 && klickX >= 20 && klickY >= 220 && klickX <= 170 && klickY <= 270)
+	{
+		if(worldSpin == -1)
+		{
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Clockwise");
+			worldSpin = 1;
+		} else {
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Counter-Clockwise");
+			worldSpin = -1;
+		}
+	}
+
+	if(button1 == 1 && klickX >= 20 && klickY >= 280 && klickX <= 170 && klickY <= 330)
+	{
+		if(doWorldSpin)
+		{
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Frozen");
+			doWorldSpin = false;
+		} else {
+			text6.setColor(255, 0, 0);
+			text6.drawText(0, 0, "Unfrozen");
+			doWorldSpin = true;
+		}
+	}
+
+	if(klickX >= 97 && klickY >= 340 && klickX <= 166 && klickY <= 363)
+	{
+		if(button1 == 1) {
+			xOrbitUp = true;
+		} else {
+			xOrbitUp = false;
+		}
+	}
+	if(klickX >= 97 && klickY >= 365 && klickX <= 166 && klickY <= 383)
+	{
+		if(button1 == 1)
+			xOrbitDown = true;
+		else
+			xOrbitDown = false;
+	}
+	if(klickX >= 23 && klickY >= 340 && klickX <= 95 && klickY <= 363)
+	{
+		if(button1 == 1) {
+			xOrbitSpeedUp = true;
+		} else {
+			xOrbitSpeedUp = false;
+		}
+	}
+	if(klickX >= 23 && klickY >= 365 && klickX <= 95 && klickY <= 383)
+	{
+		if(button1 == 1)
+			xOrbitSpeedDown = true;
+		else
+			xOrbitSpeedDown = false;
+	}
+	if(klickX >= 97 && klickY >= 400 && klickX <= 166 && klickY <= 423)
+	{
+		if(button1 == 1) {
+			yOrbitUp = true;
+		} else {
+			yOrbitUp = false;
+		}
+	}
+	if(klickX >= 97 && klickY >= 425 && klickX <= 166 && klickY <= 443)
+	{
+		if(button1 == 1)
+			yOrbitDown = true;
+		else
+			yOrbitDown = false;
+	}
+	if(klickX >= 23 && klickY >= 400 && klickX <= 95 && klickY <= 423)
+	{
+		if(button1 == 1) {
+			yOrbitSpeedUp = true;
+		} else {
+			yOrbitSpeedUp = false;
+		}
+	}
+	if(klickX >= 23 && klickY >= 425 && klickX <= 95 && klickY <= 443)
+	{
+		if(button1 == 1)
+			yOrbitSpeedDown = true;
+		else
+			yOrbitSpeedDown = false;
+	}
+	if(klickX >= 97 && klickY >= 460 && klickX <= 166 && klickY <= 483)
+	{
+		if(button1 == 1) {
+			zOrbitUp = true;
+		} else {
+			zOrbitUp = false;
+		}
+	}
+	if(klickX >= 97 && klickY >= 485 && klickX <= 166 && klickY <= 503)
+	{
+		if(button1 == 1)
+			zOrbitDown = true;
+		else
+			zOrbitDown = false;
+	}
+	if(klickX >= 23 && klickY >= 460 && klickX <= 95 && klickY <= 483)
+	{
+		if(button1 == 1) {
+			zOrbitSpeedUp = true;
+		} else {
+			zOrbitSpeedUp = false;
+		}
+	}
+	if(klickX >= 23 && klickY >= 485 && klickX <= 95 && klickY <= 503)
+	{
+		if(button1 == 1)
+			zOrbitSpeedDown = true;
+		else
+			zOrbitSpeedDown = false;
+	}
+}
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTRenderEvent(renderEvent)">
+	if(ie)
+	  rFunction(renderEvent);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTKeyboardEvent(keyEvent)">
+	if(ie)
+	  kFunction(keyEvent);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTMouseEvent(mouseEvent)">
+	if(ie)
+	  mFunction(mouseEvent);
+</SCRIPT>
+</HTML>

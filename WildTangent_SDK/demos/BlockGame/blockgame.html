@@ -1,0 +1,662 @@
+<HTML>
+<center>
+
+<SCRIPT LANGUAGE="JAVASCRIPT" SRC="cookie.js"></SCRIPT>
+<SCRIPT language="javascript1.2">
+	// This demo shows a set of rotating boxes that you can play with
+	// to reveal the pictures on each side
+
+//	TO DO
+//	Use new capability of setColor to set color of individual faces
+//	make it sequentially load images and remove colors as it goes
+//	make it keep score
+//	make it have a variable canvas size
+//	have a solve key
+//	make the tiles do more interesting things
+//		when scrambling
+//		when solving
+
+	// Specify number of cubes per side of the (square) puzzle
+	var boxesPerSide = 4;
+
+	var boxSettings=parseInt(getCookie("WTBPBLOCKS"));
+	if(boxSettings > 0)boxesPerSide=boxSettings+2;
+
+	// Specify the size of each box
+	var boxSize = .5;
+	var sizeSettings=parseInt(getCookie("WTBPSIZE"));
+	if(sizeSettings ==1)boxSize=.33;
+	if(sizeSettings ==2)boxSize=.5;
+	if(sizeSettings ==3)boxSize=.75;
+	if(sizeSettings ==4)boxSize=1.0;
+	
+	// Specify whether game is missing tile variant or freeform
+	// When set to 1, you have a fixed grid of tiles with just one gap
+	//		and you can only move the tile into that space
+	// When set to anything else, you have a grid with extra blank workspace
+	//		on the right hand side to store tiles in
+	var missingTile = 0;
+	var typeSettings=parseInt(getCookie("WTBPGAMETYPE"));
+	if(typeSettings > 0)missingTile=typeSettings-1;
+	
+	// Specify randomize type when NOT PLAYING missingTile == 1
+	// because it would be very hard to play the game if you did.....
+	//		0 - randomize but keep all same picture face up
+	//		1 - randomize and also rotate tiles
+	var randomizeRotateState = 0;
+	var difficultySettings=parseInt(getCookie("WTBPDIFFICULTY"));
+	if(difficultySettings > 0)randomizeRotateState=difficultySettings-1;
+	
+	// Specify how many of the faces of the cubes to put images on
+	var numberOfFacesPerBox = 6;
+	
+	// Specify the number of possible slots for boxes on each side
+	var boxSlotsX = boxesPerSide+2;
+	var boxSlotsY = boxesPerSide;
+	if ( missingTile == 1 )
+	{
+		boxSlotsX = boxesPerSide;
+		boxSlotsY = boxesPerSide;
+	}
+
+
+	// Mouse works in screen pixels, and rest of content specified in inches
+	// so simply measure the locations of the boxes using
+	// self.status=e.getX() + " " + e.getY()  // in the mouse handler
+	// and store the results
+	var bottomLeftOfBox1_1_X_InPixels = 29 * boxSize;
+	var bottomLeftOfBox1_1_Y_InPixels = 475 * boxSize;
+	var boxSide_InPixels = 111 * boxSize * 5 / (boxesPerSide+1);
+	
+	// 0 = hires, 1 = lores, 2 = web
+	var lores = 0; // 0 = hires, 1 = lores, 2 = web, 3 - verylores
+
+	// Specify names of the images
+	var webImageNames = [
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/waves256x256.wjp",
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/mountain256x256.wjp",
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/waves2_256x256.wjp",
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/coastline256x256.wjp",
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/mountain256x256.wjp",
+		"http://www.wildtangent.com/demos/WildPlayer/BlockGame/images/waves2_256x256.wjp"
+	]
+	var imageNames = [
+		"images/logo400x400.wjp",
+		"images/forest400x400.wjp",
+		"images/butterfly400x400.wjp",
+		"images/truck400x400.wjp",
+		"images/black.wjp",
+		"images/black.wjp"
+	]
+	var loresImageNames = [
+		"images/waves256x256.wjp",
+		"images/mountain256x256.wjp",
+		"images/waves2_256x256.wjp.wjp",
+		"images/coastline256x256.wjp",
+		"images/mountain256x256.wjp",
+		"images/waves2_256x256.wjp"
+	]
+	var veryLoresImageNames = [
+		"images/waves128x128.wjp",
+		"images/mountain128x128.wjp",
+		"images/waves2_256x256.wjp.wjp",
+		"images/coastline128x128.wjp",
+		"images/mountain128x128.wjp",
+		"images/waves2_128x128.wjp"
+	]
+
+	var wt, stage, camera;
+	var boxObjectArray;
+	var images = new Array();
+	var ambient, point;
+	var picture;
+	var i, j;
+	var faceNameArray = ["front", "back", "left", "right", "top", "bottom" ];
+	
+	var group;
+	var camgroup;
+	
+	function removeColors()
+	{
+		imagesAllLoaded = 1;
+		for(k = 1; k <= numberOfFacesPerBox; k++)
+		{
+			if ( images[k].getIsLoaded() )
+			{
+				for(i = 1; i <= boxesPerSide; i++)
+				{
+					for(j = 1; j <= boxesPerSide; j++)
+					{
+						boxObjectArray[i][j].box.setColor(255,255,255);
+					}
+				}
+			}
+			else
+				imagesAllLoaded = 0;
+		}
+		if ( imagesAllLoaded == 0 )
+			setTimeout("removeColors();", 1000);
+	}
+
+	// Functions to return coordinated of a box-grid position
+	// For example, box in position 2,3 may have a real X of -1.1, 0.35
+	function gridXToPositionX( gridX )
+	{
+		return( (gridX * .7  * 5 / (boxesPerSide + 1)) - (2.5));
+	}
+	function gridYToPositionY( gridY )
+	{
+		return( (gridY * .7 * 5 / (boxesPerSide + 1)) - (1.75));
+	}
+	
+	function putBoxInPlace( box, z )
+	{
+		box.container.setPosition(gridXToPositionX(box.xGrid), gridYToPositionY(box.yGrid),z);
+
+	}
+
+	// Put boxes in position, set rotation all to same state
+	// 1st argument specifies create boxes or not
+	//		0 - not
+	//		1 - create
+	// 2nd argument specifies randomize type
+	//		0 - not random
+	//		1 - randomize
+	var currentBoxesPerSide = 0;
+	function resetBoxes(createBoxes, randomizeBoxes)
+	{
+		// create boxes if necessary
+		if ( createBoxes )
+		{
+			if ( currentBoxesPerSide != 0 ) // need to remove old boxes first
+			{
+				for( i = 1 ; i <= currentBoxesPerSide; i++ )
+				{
+					for( j = 1 ; j <= currentBoxesPerSide; j++ )
+					{
+						stage.removeObject(boxObjectArray[i][j].container);
+					}
+					boxObjectArray[i] = 0;
+				}		
+				boxObjectArray = 0;
+			}		
+			currentBoxesPerSide = boxesPerSide ;
+			boxObjectArray = new Array();
+			for( i = 1 ; i <= boxesPerSide; i++ )
+			{
+				boxObjectArray[i] = new Array();
+				for( j = 1 ; j <= boxesPerSide; j++ )
+				{
+					boxObjectArray[i][j] = new Object();
+					boxObjectArray[i][j].box = wt.createBox( .7*5/(boxesPerSide+1), .7*5/(boxesPerSide+1), .7*5/(boxesPerSide+1), 4);
+					boxObjectArray[i][j].box.setColor(128+i*127/boxesPerSide,128,128+j*127/boxesPerSide);
+					//	box[i][j].setOpacity(60);
+					boxObjectArray[i][j].container = wt.createContainer();
+					boxObjectArray[i][j].container.attach(boxObjectArray[i][j].box);
+					stage.addObject(boxObjectArray[i][j].container);
+					// Each box can have 6 states, 1 is default, 2 is rotated right once
+					// 3 is rotated twice right, 4 is rotated three times right
+					// 5 is back to original pos and then rotated up once
+					// 6 is back to original pos and then rotated down once
+					boxObjectArray[i][j].rotateState = 1;
+				}
+			}		
+			for( k = 1; k <= numberOfFacesPerBox; k++ )
+			{
+				if ( lores == 0)
+					images[k] = wt.createBitmap(imageNames[k-1]);
+				if ( lores == 1)
+					images[k] = wt.createBitmap(loresImageNames[k-1]);
+				if ( lores == 2)
+					images[k] = wt.createBitmap(webImageNames[k-1]);
+				if ( lores == 3)
+					images[k] = wt.createBitmap(veryLoresImageNames[k-1]);
+				for(i = 1; i <= boxesPerSide; i++)
+				{
+					for(j = 1; j <= boxesPerSide; j++)
+					{
+						if ( 0 == "0.3 Pre-Beta".indexOf(wt.getVersion()) )
+							boxObjectArray[i][j].box.setTexture(images[k], 0, faceNameArray[k-1]);
+						else
+							boxObjectArray[i][j].box.setTexture(images[k], faceNameArray[k-1]);
+						if ( 0 == "1.0.5.28".indexOf(wt.getVersion()) )
+							boxObjectArray[i][j].box.setTextureRect(faceNameArray[k-1],(i-1)/boxesPerSide,(j-1)/boxesPerSide,i/boxesPerSide,j/boxesPerSide);
+						else
+							boxObjectArray[i][j].box.setTextureRect(faceNameArray[k-1],(i-1)/boxesPerSide,(boxesPerSide-j)/boxesPerSide,i/boxesPerSide,(boxesPerSide-j+1)/boxesPerSide);
+					}
+				}
+			}
+			setTimeout("removeColors();", 1000);
+		}		
+
+		rotateStateArray = new Array();
+		for( i = 1 ; i <= 6; i++ )
+			rotateStateArray[i] = 0;
+		for( i = 1 ; i <= boxesPerSide; i++ )
+		{
+			for( j = 1 ; j <= boxesPerSide; j++ )
+			{
+				boxObjectArray[i][j].xGrid = i;
+				boxObjectArray[i][j].yGrid = j;
+				// Collect array of most common rotateState, and reset all boxes to that
+				rotateStateArray[boxObjectArray[i][j].rotateState]++;
+				boxObjectArray[i][j].rotateRenderCount = 0;
+			}
+		}
+		
+		if ( randomizeBoxes )
+			if ( missingTile == 1 )
+			{
+				holeX = boxesPerSide; // X of hole in game
+				holeY = boxesPerSide; // Y of hole in game
+				for( kk = 1 ; kk <= (boxesPerSide*boxesPerSide*10); kk++ )
+				{
+					box = 0;
+					switch ( Math.floor ( Math.random() * 3.99 ) )
+					{
+						case 0: // Move hole right, ie move tile to right of hole left
+							if ( holeX != boxesPerSide ) // hole not at right hand edge
+							{
+								box = getBox( holeX+1, holeY );
+								box.xGrid = holeX;
+								holeX++;
+							}
+							break
+						case 1: // Move hole left, ie move tile to left of hole right
+							if ( holeX != 1 ) // hole not at left hand edge
+							{
+								box = getBox( holeX-1, holeY );
+								box.xGrid = holeX;
+								holeX--;
+							}
+							break
+						case 2: // Move hole up
+							if ( holeY != boxesPerSide ) // hole not at top edge, ie move tile below hole up
+							{
+								box = getBox( holeX, holeY+1 );
+								box.yGrid = holeY;
+								holeY++;
+							}
+							break
+						case 3: // Move hole down
+							if ( holeY != 1 ) // hole not at bottom edge, ie move tile above hole down
+							{
+								box = getBox( holeX, holeY-1 );
+								box.yGrid = holeY;
+								holeY--;
+							}
+							break
+					}
+					if ( box != 0 ) putBoxInPlace( box, 0 );
+				}
+			}
+			else
+			{
+				for( i = 1 ; i <= (boxesPerSide*boxesPerSide*10); i++ )
+				{
+					firstGridX = Math.floor( 1 + Math.random() * boxesPerSide * 0.999);
+					firstGridY = Math.floor( 1 + Math.random() * boxesPerSide * 0.999);
+					secondGridX = Math.floor( 1 + Math.random() * boxesPerSide * 0.999);
+					secondGridY = Math.floor( 1 + Math.random() * boxesPerSide * 0.999);
+					if ( missingTile == 1 ) // Make sure don't swap back in off-screen tile
+					{
+						if ( firstGridX == boxesPerSide && firstGridY == boxesPerSide ) firstGridX = 1;
+						if ( secondGridX == boxesPerSide && secondGridY == boxesPerSide ) secondGridX = 2;
+					}
+					swapGridX = boxObjectArray[firstGridX][firstGridY].xGrid;
+					swapGridY = boxObjectArray[firstGridX][firstGridY].yGrid;
+					boxObjectArray[firstGridX][firstGridY].xGrid = boxObjectArray[secondGridX][secondGridY].xGrid;
+					boxObjectArray[firstGridX][firstGridY].yGrid = boxObjectArray[secondGridX][secondGridY].yGrid;
+					boxObjectArray[secondGridX][secondGridY].xGrid = swapGridX;
+					boxObjectArray[secondGridX][secondGridY].yGrid = swapGridY;
+					//boxObjectArray[i][j].rotateState = 1;
+					putBoxInPlace( boxObjectArray[firstGridX][firstGridY], 0 );
+					putBoxInPlace( boxObjectArray[secondGridX][secondGridY], 0 );
+				}		
+			}
+		
+		// Find most common rotate state
+		mostCommonRotateState = 1;
+		if ( rotateStateArray[2] > rotateStateArray[1] ) mostCommonRotateState = 2;
+		if ( rotateStateArray[3] > rotateStateArray[2] ) mostCommonRotateState = 3;
+		if ( rotateStateArray[4] > rotateStateArray[3] ) mostCommonRotateState = 4;
+		if ( rotateStateArray[5] > rotateStateArray[4] ) mostCommonRotateState = 5;
+		if ( rotateStateArray[6] > rotateStateArray[5] ) mostCommonRotateState = 6;
+
+		// Position boxes in place
+		for( i = 1 ; i <= boxesPerSide; i++ )
+		{
+			for( j = 1 ; j <= boxesPerSide; j++ )
+			{
+				if ( randomizeBoxes == 1 && randomizeRotateState && missingTile == 0 )
+					boxObjectArray[i][j].rotateState = 1 + Math.floor( Math.random() * 3.999 );
+				else
+					boxObjectArray[i][j].rotateState = mostCommonRotateState;
+				boxObjectArray[i][j].container.setOrientation( 0, 1, 0, ( boxObjectArray[i][j].rotateState - 1 ) * 90);
+				putBoxInPlace( boxObjectArray[i][j], 0 );
+			}
+		}		
+		if ( missingTile == 1 ) // Move this tile off screen
+		{
+			boxObjectArray[boxesPerSide][boxesPerSide].container.setPosition(-5, -5,0);
+			boxObjectArray[boxesPerSide][boxesPerSide].xGrid = 99;
+			boxObjectArray[boxesPerSide][boxesPerSide].yGrid = 99;
+		}		
+		putBoxInPlace( boxObjectArray[boxesPerSide][boxesPerSide], 0 );
+	}
+
+	window.onload=wow;
+	function wow()
+	{
+		wt = document.pwt;
+
+		stage = wt.createStage();
+
+		camera = stage.createCamera();
+//		camera.setViewRect(0, 0, ((boxSize * 750)*((boxesPerSide+2)/6)), ((boxSize * 500)*(boxesPerSide/4)));
+		camera.setViewRect(0, 0, ((boxSize * 750)), ((boxSize * 500)));
+
+		camera.setPosition(0,0,-5);
+
+		// Create boxes	
+		resetBoxes(1, 0);
+		
+		ambient = wt.createLight(0);
+		stage.addObject(ambient);
+
+		//point = wt.createLight(1);
+		//stage.addObject(point);
+		//point.setPosition(3,3,-6);
+
+		picture = wt.createBitmap("images/backdrop.wjp");
+		
+		drop = camera.addDrop(picture);
+		drop.setSize((boxSize * 750), (boxSize * 500));		
+
+		wt.setNotifyKeyboardEvent(true);
+		wt.setNotifyMouseEvent(1);
+		wt.setNotifyRenderEvent(true);
+
+		if(document.layers)
+		{
+			wt.setOnMouseEvent("mouse");
+			wt.setOnKeyboardEvent("key");
+			wt.setOnRenderEvent("render");
+		}
+
+		wt.start();
+		wt.focus();
+		wt.setMaxFramesPerSecond(30);
+	}
+
+	// use a variable to remember whether we are dragging a box or not
+	var draggingBox = 0;
+	var startRotating = 0;
+	var stopRotating = 0;
+	var startingBoxX = 0;
+	var startingBoxY = 0;
+	var mouseToBoxOffsetX = 0;
+	var mouseToBoxOffsetY = 0;
+	var pickedUpBox;
+	var rotateState = 0;	
+	var rotateRenderCount = 0;
+	var stepsInRotation = 18
+	var spinAll = 0;
+
+
+	// Keyboard values, returned by event.getKey()
+	// Space = 32
+	// a = 65, b = 66, ...., z = 90
+	// 0 = 48, 1 = 49, 2 = 50, ..., 9 = 57
+	// shift = 16, ctrl = 17, capslock = 20
+	// left arrow = 37, up = 38, right = 39, down = 40
+	// Numeric keypad 0 = 96, 1 = 97, 2 = 98, ..., 9 = 105
+	// For this game:
+	//	Space = reset game
+	//	s = solve
+	//	r = rotate all tiles
+	function key(e)
+	{
+		if ( spinAll == 1 || draggingBox == 1 || rotateState == 1 || startRotating == 1) return ;
+		
+		// self.status = e.getKey() + " " + e.getKeyState();
+
+		// Spin all tiles clockwise
+		if(e.getKey() == 82 && e.getKeyState() == 1)
+		{
+			spinAll = 1;
+		}
+
+		// Solve the game
+		if(e.getKey() == 83 && e.getKeyState() == 1)
+		{
+			resetBoxes(0, 0);
+		}
+
+		// randomize tiles
+		if(e.getKey() == 32 && e.getKeyState() == 1)
+		{
+			resetBoxes(0, 1);
+		}
+
+		// Randomize in missingTile case - do by moving gap around place at a time
+		if( ( e.getKey() >= 49 && e.getKey() <= 53 ) && e.getKeyState() == 1)
+		{
+			boxesPerSide = e.getKey() - 48 ;
+			// Recreate and Reset positions first...
+			resetBoxes(1, 0);
+		}
+	}
+
+	// Get the grid position from the pixel position specified, as obtained from a mouse event
+	function getGrid( X_InPixels, Y_InPixels )
+	{
+		var gridPosition = new Object();
+		gridPosition.x = Math.round ( 0.5 + (X_InPixels - bottomLeftOfBox1_1_X_InPixels) / boxSide_InPixels );
+		gridPosition.y = Math.round ( 0.5 + (bottomLeftOfBox1_1_Y_InPixels - Y_InPixels) / boxSide_InPixels );
+		if ( gridPosition.x < 1 ) gridPosition.x = 1;
+		if ( gridPosition.x > boxSlotsX ) gridPosition.x = boxSlotsX;
+		if ( gridPosition.y < 1 ) gridPosition.y = 1;
+		if ( gridPosition.y > boxSlotsY ) gridPosition.y = boxSlotsY;
+		return gridPosition;
+	}
+	
+	// Find the box at the grid spot x, y - and return the box object
+	function getBox( x, y )
+	{
+		for ( i = 1; i <= boxesPerSide; i++ )
+		{
+			for ( j = 1; j <= boxesPerSide; j++ )
+			{
+				if ( boxObjectArray[i][j].xGrid == x && boxObjectArray[i][j].yGrid == y )
+					return  boxObjectArray[i][j];
+			}
+		}
+		return( 0 );
+	}
+	
+	// mouse button values, returned by event.getButtonState() values:
+	// 1 = left button
+	// 2 = right button
+	// 16 = middle button
+	function mouse(e)
+	{
+		if ( spinAll == 1 ) return ;
+		
+		//self.status=e.getX() + " " + e.getY() + " " + e.getButtonState() + " " + e.getButtonState();   // put mouse coordinates in screen window
+		mouseStatus = e.getButtonState();
+		mouseX = e.getX();
+		mouseY = e.getY();
+		leftButton = mouseStatus & 1 ;
+		middleButton = mouseStatus & 16 ;
+		rightButton = mouseStatus & 2 ;
+		//self.status = leftButton + " " + middleButton + " " + rightButton ;
+		if(leftButton)
+		{
+			if ( draggingBox == 0 && rotateState == 0)
+			{
+				// Calculate where we are on a grid of boxes, with 1,1 in the bottom left
+				boxGrid = getGrid( mouseX, mouseY );
+				// Pick up a box if necessary
+				if ( boxGrid.x <= boxSlotsX && boxGrid.y <= boxSlotsY )
+				{
+					pickedUpBox = getBox( boxGrid.x, boxGrid.y );
+					if ( pickedUpBox )
+					{
+						draggingBox = 1;
+						startingBoxX = boxGrid.x;
+						startingBoxY = boxGrid.y;
+						mouseToBoxOffsetX = pickedUpBox.container.getPosition().getX() - (mouseX / 160 / boxSize  - 2.5);
+						mouseToBoxOffsetY = pickedUpBox.container.getPosition().getY() + (mouseY / 160 / boxSize  - 1.75);
+					}
+				}
+			}
+			if ( draggingBox == 1 )
+			{
+				pickedUpBox.container.setPosition( mouseToBoxOffsetX + (mouseX / 160 / boxSize  - 2.5), mouseToBoxOffsetY -(mouseY / 160 / boxSize  - 1.75), -0.2);
+				// Check for user wanting to start rotating the box
+				if ( rightButton ) // Only start rotating when we have a box picked up
+				{
+					startRotating = 1;
+				}
+			}
+		}
+		else
+		{
+			// Drop box and snap to grid
+			if ( draggingBox == 1 )
+			{
+				draggingBox = 0;
+				boxGrid = getGrid( mouseX, mouseY );
+				if	( getBox ( boxGrid.x, boxGrid.y ) == 0
+					&& ( (missingTile == 0 ) |
+							( Math.abs( pickedUpBox.xGrid - boxGrid.x ) 
+								+ Math.abs( pickedUpBox.yGrid - boxGrid.y ) ) == 1 )
+					)
+				{
+					pickedUpBox.xGrid = boxGrid.x;
+					pickedUpBox.yGrid = boxGrid.y;
+				}
+				else
+				{
+					pickedUpBox.xGrid = startingBoxX;
+					pickedUpBox.yGrid = startingBoxY;
+				}
+				putBoxInPlace( pickedUpBox, 0 );
+			}
+		}
+		if ( ! rightButton )
+		{
+			startRotating = 0;
+			stopRotating = 1;
+		}
+	}
+
+function rotateBox( box )
+{
+	switch ( box.rotateState )
+	{
+		case 1:		// Rotating to state 2 now
+			box.rotateRenderCount++;
+			box.container.setOrientation(0, 1, 0, 90 / stepsInRotation * box.rotateRenderCount);
+			if ( box.rotateRenderCount == stepsInRotation )
+			{
+				box.rotateRenderCount = 0;
+				box.rotateState = 2;
+			}
+			break;
+		case 2:		// Rotating to state 3 now
+			box.rotateRenderCount++;
+			box.container.setOrientation(0, 1, 0, 90 + 90 / stepsInRotation * box.rotateRenderCount);
+			if ( box.rotateRenderCount == stepsInRotation )
+			{
+				box.rotateRenderCount = 0;
+				box.rotateState = 3;
+			}
+			break;
+		case 3:		// Rotating to state 4 now
+			box.rotateRenderCount++;
+			box.container.setOrientation(0, 1, 0, 180 + 90 / stepsInRotation * box.rotateRenderCount);
+			if ( box.rotateRenderCount == stepsInRotation )
+			{
+				box.rotateRenderCount = 0;
+				box.rotateState = 4;
+			}
+			break;
+		case 4:		// Rotating to state 5 - double dose - first, get bacck, then rotate vertically
+			box.rotateRenderCount++;
+			box.container.setOrientation(0, 1, 0, 270 + 90 / stepsInRotation * box.rotateRenderCount);
+			if ( box.rotateRenderCount == stepsInRotation )
+			{
+				box.rotateRenderCount = 0;
+				box.rotateState = 1;
+				box.container.setOrientation(0, 0, 0, 0);
+		}
+			break;
+		case 5:		// Rotating to state 6 now
+			break;
+		case 6:		// Rotating to state 1 now
+			break;
+	}
+}
+
+function render(e)
+{
+	if ( spinAll )
+	{
+		for ( i = 1; i <= boxesPerSide ; i++ )
+		{
+			for ( j = 1; j <= boxesPerSide ; j++ )
+			{
+				rotateBox( boxObjectArray[i][j] );
+			}
+		}
+		if ( boxObjectArray[1][1].rotateRenderCount == 0 )
+		{
+			rotateState = 0 ;
+			spinAll = 0;
+		}
+	}
+	else
+	{
+		if ( rotateState == 0 && startRotating == 1 )
+		{
+			rotateState = 1;
+			pickedUpBox.rotateRenderCount = 0;
+		}
+
+		if ( rotateState != 0 )
+		{
+			rotateBox( pickedUpBox );
+			if ( pickedUpBox.rotateRenderCount == 0 && stopRotating == 1 )
+			{
+				rotateState = 0 ;
+				stopRotating = 0;
+			}
+		}
+	}
+	self.status = e.getInterval();
+}
+</script>
+
+
+<script FOR="pwt" EVENT="WTMouseEvent(event)" LANGUAGE="Javascript">
+	mouse(event);
+</script>
+
+<script FOR="pwt" EVENT="WTKeyboardEvent(event)" LANGUAGE="Javascript">
+	key(event);
+</script>
+
+<script FOR="pwt" EVENT="WTRenderEvent(renderEvent)" LANGUAGE="Javascript">
+	render(renderEvent);
+</script>
+
+<body bgcolor="#000000" text="#FFFFFF">
+<script>
+document.writeln('<OBJECT classid="CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3" id="pwt" width="' + (750*boxSize) + '" height="' + (500*boxSize)+ '"><EMBED type=application/x-wildtangent-web-driver name=pwt width=' + (750*boxSize) + ' height=' + (500*boxSize) + '></OBJECT>');
+</script>
+<br><center>
+<font face="Arial" size="2">&lt;SPACE&gt; Shuffles the tiles | &lt;R&gt; Rotates all tiles | &lt;S&gt; Solves the puzzle</font> 
+</centeR>
+</body>

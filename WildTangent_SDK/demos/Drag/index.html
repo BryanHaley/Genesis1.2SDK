@@ -1,0 +1,172 @@
+<HTML>
+<HEAD>
+<TITLE>WildTangent, Inc.</TITLE>
+
+
+<SCRIPT LANGUAGE="JavaScript">
+<!-- hide this script from non-javascript-enabled browsers
+var old_x=null, old_y=null, new_x=0, new_y=0;
+// stop hiding -->
+</SCRIPT>
+</HEAD>
+
+<BODY BGCOLOR="#999999" TOPMARGIN=0 STYLE="margin-top:0x" TEXT="#FFFFFF">
+<CENTER>
+		<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" HEIGHT="100%">
+			<TR><TD BGCOLOR="#000000" ALIGN="center" VALIGN="TOP">
+<FONT FACE="Arial">				<P>This demo is must be viewed with a 4.0 or better browser.<P>
+				<OBJECT id="wtScene" classid="CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3" width="400" height="320"><embed type=application/x-wildtangent-web-driver name=wtScene width=400 height=320></embed></OBJECT>
+				<P>
+				Click and drag the model to rotate it at different angles.<BR>
+				<I>(You can't do <U>that</U> with an animated .gif!)</I>
+				<P>
+				This model and texture together are < 30K
+</FONT>			</TD></TR>
+		</TABLE>
+
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+<!--
+
+
+
+var backdrop, viewpoint, model, mainStage, pointLight, ambientLight, modelFrame, modelTexture;
+var	ie4 = (document.all)	? true : false;
+var	ns4 = (document.layers)	? true : false;
+
+function CreateScene()
+{
+
+	if (!ie4 && !ns4)  return;
+	// set up variables depending on browser:
+	if (ie4)
+		scene	= wtScene;
+	else
+		scene	= document.embeds["wtScene"];
+	
+	if (scene == null) return;
+	
+	// Create the main Stage.  The world is but a stage:
+	mainStage = scene.createStage();
+
+	ambientLight = scene.createLight(0);	//tWTLightAmbient
+	pointLight 	 = scene.createLight(1);	//tWTLightPoint
+
+	// Create the model:
+ 	model 		 = scene.createModel("models/beretta.wt");
+	modelTexture = scene.createBitmap("models/beretta.wjp");
+	
+	modelFrame   = scene.createContainer();
+	model.setTexture( modelTexture );
+	model.setScale(2,2,2);
+
+	// Create the camera:
+    viewpoint	 = mainStage.createCamera();
+    viewpoint.setViewRect( 0, 0, 400, 320 );
+
+	// Add the objects to the scene:
+    modelFrame.attach(model);
+    mainStage.addObject(modelFrame);
+    mainStage.addObject(ambientLight);
+    mainStage.addObject(pointLight);
+
+	// Set the position of the camera and lights:
+	viewpoint.setPosition ( 0, 0, -2 );
+    pointLight.setPosition( 10, 0, -15  );
+
+
+	modelFrame.setConstantRotation( 0, 1, 0, 30 );
+	ambientLight.setColor ( 0, 0, 0 );
+
+	scene.start(); 
+	scene.setNotifyMouseEvent(1);
+	if(ns4)
+	{
+		scene.setOnMouseEvent("mouse");
+	}
+}
+
+
+CreateScene();
+
+/******************************************************************************************
+ * UTILITY FUNCTIONS:
+ *****************************************************************************************/
+function hexValueObj( hexValue )
+{
+	var r,g,b;
+	this.r = hex2RGB( hexValue.substring(1, 3));
+	this.g = hex2RGB( hexValue.substring(3, 5));
+	this.b = hex2RGB( hexValue.substring(5, 7));
+}
+	
+function hex2RGB( hValue )
+{
+	var firstValue, secondValue;
+	var hexValues = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ];
+
+	// we only accept values of 2 numbers here:
+	if (hValue.length != 2)
+		return 0;
+		
+	// Find out what the value of the first character is:
+	firstValue = hValue.substring( 0, 1 );
+	for (i = 0; i < hexValues.length; i++)
+		if ( hexValues[i] == firstValue)
+			firstValue = i * 16;
+
+	// Find out what the value of the second character is:
+	secondValue = hValue.substring( 1, 2 );
+	for (i = 0; i < hexValues.length; i++)
+		if ( hexValues[i] == secondValue)
+			secondValue = i;
+
+	return firstValue + secondValue;
+}
+function degreetorad(d) {return (Math.PI * d) / 180;}
+function radtodegree(r) {return r * (180.0 / Math.PI);}
+
+function mouse(event){
+		if (event.getButtonState() == 1)
+		{
+			if (old_x == null) {
+				old_x = event.getX();
+				old_y = event.getY();
+				modelFrame.setConstantRotation(0,1,0,0);
+			}
+			
+			new_x = event.getX();
+			new_y = event.getY();
+			
+			// Rotate on the Y:
+			x_amt = (old_x - new_x) ;
+			modelFrame.setRotation(0,0,1, x_amt);
+
+			// Rotate on the X:
+			y_amt = (old_y - new_y) ;
+			modelFrame.setRotation(1,0,0, y_amt);
+
+			old_x = new_x;
+			old_y = new_y;
+
+		} else if (event.getButtonState() == 0) {
+			if (old_x != null) {
+				old_x = null;
+				old_y = null;
+				modelFrame.setConstantRotation(0,1,0, 45);
+			}
+		}
+}
+
+//-->
+</SCRIPT>
+
+ 	<script FOR="wtScene" EVENT="WTMouseEvent(event)" LANGUAGE="Javascript">
+	<!-- hide this script from non-javascript-enabled browsers
+		if(ie4)mouse(event);
+	// stop hiding -->
+	</script>
+
+</CENTER>
+
+</BODY>
+</HTML>

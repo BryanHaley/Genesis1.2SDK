@@ -1,0 +1,270 @@
+<HTML>
+<BODY onload="init()">
+<HEAD><TITLE>PHOTO SCRAMBLE</TITLE>
+<SCRIPT LANGUAGE="JAVASCRIPT">
+var settings = document.cookie; 
+function getCookie(name) { // use: getCookie("name"); 
+	var index = settings.indexOf(name + "="); 
+	if (index == -1) return null; 
+	index = settings.indexOf("=", index) + 1; 
+	var endstr = settings.indexOf(";", index); 
+	if (endstr == -1) endstr = settings.length; 
+	return unescape(settings.substring(index, endstr)); 
+} 
+
+var today = new Date(); 
+var expiry = new Date(today.getTime() + 28 * 24 * 60 * 60 * 1000); // plus 28 days 
+function setCookie(name, value) { // use: setCookie("name", value); 
+	if (value != null && value != "") document.cookie=name + "=" + escape(value) + "; expires=" + expiry.toGMTString(); 
+	settings = document.cookie; // update settings 
+}
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+
+ns4 = (document.layers)? true:false
+ie4 = (document.all)? true:false
+
+
+var initialized=0;
+
+document.onmousemove=mouse_move;
+if (ns4) document.captureEvents(Event.MOUSEMOVE)
+
+/*setCookie("WTBPGAMETYPE",1);
+setCookie("WTBPDIFFICULTY",1);
+setCookie("WTBPSIZE",3);
+setCookie("WTBPBLOCKS",3);*/
+
+function init(){
+	initialized=1;
+	}
+
+function mouse_move(e){
+	var x;
+	var y;
+	if(ns4){
+		x=e.pageX;
+		y=e.pageY;
+		}
+	else{
+		x=event.x;
+		y=event.y;
+	}
+
+	if(initialized==1){
+
+	if(x >= 468 && y >= 401 && x <= 627 && y <= 473){
+			if(ie4){
+			BEGIN.style.visibility="visible";
+			}
+			else{
+			document.BEGIN.visibility="show";
+			}
+		}
+	else{
+			if(ie4){
+			BEGIN.style.visibility="hidden";
+			}
+			else{
+			document.BEGIN.visibility="hide";
+			}
+		}
+	}
+}
+
+function select_type(selection_number){
+	var i;
+	if(ie4){
+	document.all["B" + selection_number].style.visibility="hidden";
+	document.all["C" + selection_number].style.visibility="visible";
+	}
+	else{
+	document.layers["B" + selection_number].visibility="hide";
+	document.layers["C" + selection_number].visibility="show";
+	}
+	setCookie("WTBPGAMETYPE",selection_number);
+	for(i=1;i<=2;i++){
+		if(i!=selection_number){
+			if(ie4){
+				document.all["B" + i].style.visibility="visible";
+				document.all["C" + i].style.visibility="hidden";
+				}
+			else{
+				document.layers["B" + i].visibility="show";
+				document.layers["C" + i].visibility="hide";
+				}
+			}
+
+	}
+
+}
+
+function select_size(selection_number){
+	var i;
+	setCookie("WTBPSIZE",selection_number);
+	selection_number+=2;
+	if(ie4){
+		document.all["B" + selection_number].style.visibility="hidden";
+		document.all["C" + selection_number].style.visibility="visible";
+		}
+	else{
+		document.layers["B" + selection_number].visibility="hide";
+		document.layers["C" + selection_number].visibility="show";
+		}
+
+	for(i=3;i<=6;i++){
+		if(i!=selection_number){
+			if(ie4){
+				document.all["B" + i].style.visibility="visible";
+				document.all["C" + i].style.visibility="hidden";
+			}
+			else{
+				document.layers["B" + i].visibility="show";
+				document.layers["C" + i].visibility="hide";
+			}
+			}
+
+	}
+
+}
+
+function select_difficulty(selection_number){
+	var i;
+	setCookie("WTBPDIFFICULTY",selection_number);
+	selection_number+=6;
+	if(ie4){
+		document.all["B" + selection_number].style.visibility="hidden";
+		document.all["C" + selection_number].style.visibility="visible";
+		}
+	else{
+		document.layers["B" + selection_number].visibility="hide";
+		document.layers["C" + selection_number].visibility="show";
+		}
+
+	for(i=7;i<=8;i++){
+		if(i!=selection_number){
+			if(ie4){
+				document.all["B" + i].style.visibility="visible";
+				document.all["C" + i].style.visibility="hidden";
+			}
+			else{
+				document.layers["B" + i].visibility="show";
+				document.layers["C" + i].visibility="hide";
+			}
+			}
+
+	}
+}
+
+
+function select_blocks(selection_number){
+	var i;
+	setCookie("WTBPBLOCKS",selection_number);
+	selection_number+=8;
+	if(ie4){
+		document.all["B" + selection_number].style.visibility="hidden";
+		document.all["C" + selection_number].style.visibility="visible";
+		}
+	else{
+		document.layers["B" + selection_number].visibility="hide";
+		document.layers["C" + selection_number].visibility="show";
+		}
+
+	for(i=9;i<=12;i++){
+		if(i!=selection_number){
+			if(ie4){
+				document.all["B" + i].style.visibility="visible";
+				document.all["C" + i].style.visibility="hidden";
+			}
+			else{
+				document.layers["B" + i].visibility="show";
+				document.layers["C" + i].visibility="hide";
+			}
+			}
+
+	}
+}
+
+function begin(){
+	window.open('forward.html','PHOTOSCRAMBLE','status=no,toolbar=no,menubar=no,scrollbars=no,resizable=no,width=770,height=550,top=40,left=40');
+	}
+
+
+
+</SCRIPT>
+
+</HEAD>
+
+<DIV ID="BACKDROP" STYLE="position:Absolute;left:0;top:0;width:640;height:480;z-index:0"><table width="640" border="0" cellpadding="0" cellspacing="0"><tr><td><img src="graphics/splash1.gif" width="395" height="480"></td><td><img src="graphics/splash2.gif" width="245" height="380"><br><img src="graphics/splash3.gif" width="245" height="100"></td></tr></table></DIV>
+
+<DIV ID="C1" STYLE="position:absolute;left:392;top:120;width:73;height:28;z-index:10;visibility:visible;"><img src="graphics/button1.gif" width="73" height="28" border="0"></DIV>
+<DIV ID="C2" STYLE="position:absolute;left:546;top:120;width:67;height:28;z-index:10;visibility:hidden;"><img src="graphics/button2.gif" width="67" height="28" border="0"></DIV>
+<DIV ID="C3" STYLE="position:absolute;left:392;top:190;width:39;height:28;z-index:10;visibility:hidden;"><img src="graphics/button5.gif" width="39" height="28" border="0"></DIV>
+<DIV ID="C4" STYLE="position:absolute;left:446;top:190;width:44;height:28;z-index:10;visibility:hidden;"><img src="graphics/button6.gif" width="44" height="28" border="0"></DIV>
+<DIV ID="C5" STYLE="position:absolute;left:506;top:190;width:55;height:28;z-index:10;visibility:visible;"><img src="graphics/button7.gif" width="55" height="28" border="0"></DIV>
+<DIV ID="C6" STYLE="position:absolute;left:580;top:190;width:45;height:28;z-index:10;visibility:hidden;"><img src="graphics/button8.gif" width="45" height="28" border="0"></DIV>
+<DIV ID="C7" STYLE="position:absolute;left:392;top:258;width:60;height:28;z-index:10;visibility:visible;"><img src="graphics/button3.gif" width="60" height="28" border="0"></DIV>
+<DIV ID="C8" STYLE="position:absolute;left:553;top:258;width:55;height:28;z-index:10;visibility:hidden;"><img src="graphics/button4.gif" width="55" height="28" border="0"></DIV>
+<DIV ID="C9" STYLE="position:absolute;left:392;top:325;width:48;height:28;z-index:10;visibility:hidden;"><img src="graphics/button9.gif" width="48" height="28" border="0"></DIV>
+<DIV ID="C10" STYLE="position:absolute;left:455;top:325;width:45;height:28;z-index:10;visibility:hidden;"><img src="graphics/button10.gif" width="45" height="28" border="0"></DIV>
+<DIV ID="C11" STYLE="position:absolute;left:517;top:325;width:42;height:28;z-index:10;visibility:visible;"><img src="graphics/button11.gif" width="42" height="28" border="0"></DIV>
+<DIV ID="C12" STYLE="position:absolute;left:570;top:325;width:42;height:28;z-index:10;visibility:hidden;"><img src="graphics/button12.gif" width="42" height="28" border="0"></DIV>
+
+<DIV ID="B1" STYLE="position:absolute;left:392;top:120;width:73;height:28;z-index:10;visibility:hidden;"><a href="javascript:select_type(1)"><img src="graphics/blank.gif" width="73" height="28" border="0"></a></DIV>
+<DIV ID="B2" STYLE="position:absolute;left:546;top:120;width:67;height:28;z-index:10;visibility:visible;"><a href="javascript:select_type(2)"><img src="graphics/blank.gif" width="67" height="28" border="0"></a></DIV>
+<DIV ID="B3" STYLE="position:absolute;left:392;top:190;width:39;height:28;z-index:10;visibility:visible;"><a href="javascript:select_size(1)"><img src="graphics/blank.gif" width="39" height="28" border="0"></a></DIV>
+<DIV ID="B4" STYLE="position:absolute;left:446;top:190;width:44;height:28;z-index:10;visibility:visible;"><a href="javascript:select_size(2)"><img src="graphics/blank.gif" width="44" height="28" border="0"></a></DIV>
+<DIV ID="B5" STYLE="position:absolute;left:506;top:190;width:55;height:28;z-index:10;visibility:hidden;"><a href="javascript:select_size(3)"><img src="graphics/blank.gif" width="55" height="28" border="0"></a></DIV>
+<DIV ID="B6" STYLE="position:absolute;left:580;top:190;width:45;height:28;z-index:10;visibility:visible;"><a href="javascript:select_size(4)"><img src="graphics/blank.gif" width="45" height="28" border="0"></a></DIV>
+<DIV ID="B7" STYLE="position:absolute;left:392;top:258;width:60;height:28;z-index:10;visibility:hidden;"><a href="javascript:select_difficulty(1)"><img src="graphics/blank.gif" width="60" height="28" border="0"></a></DIV>
+<DIV ID="B8" STYLE="position:absolute;left:553;top:258;width:55;height:28;z-index:10;visibility:visible;"><a href="javascript:select_difficulty(2)"><img src="graphics/blank.gif" width="55" height="28" border="0"></a></DIV>
+<DIV ID="B9" STYLE="position:absolute;left:392;top:325;width:48;height:28;z-index:10;visibility:visible;"><a href="javascript:select_blocks(1)"><img src="graphics/blank.gif" width="48" height="28" border="0"></a></DIV>
+<DIV ID="B10" STYLE="position:absolute;left:455;top:325;width:45;height:28;z-index:10;visibility:visible;"><a href="javascript:select_blocks(2)"><img src="graphics/blank.gif" width="45" height="28" border="0"></a></DIV>
+<DIV ID="B11" STYLE="position:absolute;left:517;top:325;width:42;height:28;z-index:10;visibility:hidden;"><a href="javascript:select_blocks(3)"><img src="graphics/blank.gif" width="42" height="28" border="0"></a></DIV>
+<DIV ID="B12" STYLE="position:absolute;left:570;top:325;width:42;height:28;z-index:10;visibility:visible;"><a href="javascript:select_blocks(4)"><img src="graphics/blank.gif" width="42" height="28" border="0"></a></DIV>
+
+<DIV ID="BEGIN" STYLE="position:absolute;left:468;top:401;width:159;height:72;z-index:10;visibility:hidden;"><a href="javascript:begin()"><img src="graphics/button13.gif" width="159" height="72" border="0"></a></DIV>
+
+
+<SCRIPT LANGUAGE="JAVASCRIPT">
+	TestCookie = getCookie("WTBPGAMETYPE");
+	if (TestCookie == null)
+	{
+	setCookie("WTBPGAMETYPE",1);
+	setCookie("WTBPDIFFICULTY",1);
+	setCookie("WTBPSIZE",3);
+	setCookie("WTBPBLOCKS",3);
+	}
+	var Type = getCookie("WTBPGAMETYPE");
+	var Difficulty = getCookie("WTBPDIFFICULTY");
+	var Size = getCookie("WTBPSIZE");
+	var Blocks = getCookie("WTBPBLOCKS");
+
+	
+	if(Type=="1")Type=1;
+	if(Type=="2")Type=2;
+
+	if(Difficulty=="1")Difficulty=1;
+	if(Difficulty=="2")Difficulty=2;
+
+	if(Size=="1")Size=1;
+	if(Size=="2")Size=2;
+	if(Size=="3")Size=3;
+	if(Size=="4")Size=4;
+
+	if(Blocks=="1")Blocks=1;
+	if(Blocks=="2")Blocks=2;
+	if(Blocks=="3")Blocks=3;
+	if(Blocks=="4")Blocks=4;
+
+	select_type(Type);
+	select_difficulty(Difficulty);
+	select_size(Size);
+	select_blocks(Blocks);
+
+	
+</SCRIPT>
+
+</BODY>
+</HTML>

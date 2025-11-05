@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>WildTest 7: Camera Functions</title>
+</head>
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="tests_js.js"></script>
+<body>
+<div align="Center">
+	<font size="5" face="Arial" color="Black"><b>Camera Functions</b></font>
+	<table>
+	<tr>
+		<TD ALIGN="center" VALIGN="top">
+		<object classid='clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3' ID='wtScene' width='300' height='300'><embed  type='application/x-wildtangent-web-driver' name='wtScene' width='300' height='300'></embed></object>
+
+		<form name="button"><input name="startTest" type="button" value="Loading..." onClick="beginTest();"> <input type="button" NAME="closer" value="Stop Test" onclick="javascript:self.close();"></form>
+		</td>
+		<TD VALIGN="top">
+			<b><font face="Arial" size="5" color="Gray">What You Should See:</font></b><br>
+			<table>
+			<tr>
+				<td>
+					<font face="Verdana" size="2"><b>
+					This test checks the camera by moving its position relative to two objects in the scene (shown below).
+					<UL>
+						<LI>Step 1:  The camera will move to the left, then to right,  and finally back to the center.<BR>
+						<IMG SRC="images/7-1.jpg" WIDTH=150 HEIGHT=150 ALT="Step 1" BORDER="0">
+						<LI>Step 2:  The camera will move backward, away from the objects, then return to the original position.<BR>
+						<IMG SRC="images/7-2.jpg" WIDTH=150 HEIGHT=150 ALT="Step 2" BORDER="0">
+						<LI>Step 3:  The camera will rotate around the objects in the z-plane, always keeping the object in view (the objects will appear to rotate).<BR>
+						<IMG SRC="images/7-3.jpg" WIDTH=150 HEIGHT=150 ALT="Step 3" BORDER="0">
+					</UL>
+
+					</b></font>
+				</td>
+			</tr>
+			</table>
+		</TD>
+	</tr>
+	</table>
+</div>
+<p>
+
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+<!--
+var phase = 1;
+var  currentPos;
+var currentDeg = 30;
+var direction = true;
+var isDone = false;
+var box, b_frame, boxTexture, box2, b2_frame, box2Texture, center;
+var mainstage;
+
+function initHTML()
+{
+	box	= scene.createBox( .5, .5, .5);
+	boxTexture = scene.createBitmap(jpg_dir + "BoxTexture1.wjp");
+	box.setTexture(boxTexture);
+	b_frame = scene.createContainer();
+	box2 	= scene.createBox( .5, .5, .5);
+	box2Texture = scene.createBitmap(jpg_dir + "BoxTexture2.wjp");
+	box2.setTexture(box2Texture);
+	b2_frame = scene.createContainer();
+	mainStage.addObject( b_frame );
+	mainStage.addObject( b2_frame );
+	b_frame.attach( box );
+	b2_frame.attach( box2 );
+	b_frame.setPosition(  .4, 0, 0);
+	b2_frame.setPosition(-.4, 0, 0);
+	ambientLight.setColor(255, 255, 255);
+	currentPos = viewpoint.getPosition();
+	status_info.setTextColor(0, 255, 0);
+	status_info.setColor(255,0,0);
+	status_info.drawText(0, scene_height-16, "Step: 1" );
+}
+
+function rFunction(thisRender)
+{
+	var thisTime = new Date();
+	
+	if(isDone)
+	{
+		return;
+	}
+
+	if(!boxTexture.getIsLoaded() || !box2Texture.getIsLoaded()) return;
+	
+	if(phase == 1)
+	{
+		lastRenderTime = thisTime.getTime();
+		currentPos = viewpoint.getPosition();
+		if(currentPos.getX() > 1)
+			direction = false;
+			
+		if(direction)
+		{
+			viewpoint.setPosition(currentPos.getX() + .03, currentPos.getY(), currentPos.getZ());
+		} else {
+			if(currentPos.getX() < -1)
+			{
+				phase = 2;
+			} else {
+				viewpoint.setPosition(currentPos.getX() - .03, currentPos.getY(), currentPos.getZ());
+			}
+		}
+	}
+	
+	if(phase == 2)
+	{
+		lastRenderTime = thisTime.getTime();
+		currentPos = viewpoint.getPosition();
+		if(currentPos.getX() >= 0)
+			phase = 3;
+		viewpoint.setPosition(currentPos.getX() + .03, currentPos.getY(), currentPos.getZ());
+		if (phase == 3)
+		{
+			 status_info.setColor(255,0,0);
+			 status_info.drawText(0, scene_height-16, "Step: 2" );
+		}
+	}
+	
+	if(phase == 3)
+	{
+		lastRenderTime = thisTime.getTime();
+		if (!direction) 
+		{
+			if (currentDeg < 90) 
+				currentDeg ++;
+			else
+				direction = true;
+		} else {
+			if (currentDeg > 30)
+				currentDeg --;
+			else
+				phase = 4;
+		}
+		viewpoint.setFieldOfView( currentDeg );
+	}
+	
+	if(phase == 4)
+	{
+		b_frame.setPosition(.4, 0, 0);
+		b2_frame.setPosition(-.4, 0, 0);
+		center = scene.createGroup();
+		mainStage.addObject( center );
+		center.setPosition(0,0,0);
+		center.addObject( viewpoint );
+		viewpoint.setAbsolutePosition(0,0,-2);
+		center.setConstantRotation(0,1,0, 90);
+		status_info.drawText(0, scene_height-16, "Step: 3" );
+		lastRenderTime = thisTime.getTime();
+		phase = 5;
+	}
+	
+	if(phase == 5)
+	{
+		if(thisTime.getTime() >= lastRenderTime + 4000)
+		{
+			center.setConstantRotation(0,1,0, 0);
+			status_info.setColor(255,0,0);
+			status_info.drawText(0, 0, "DONE!" );
+			document.button.closer.value = "Finished!";
+			phase = 6;
+			isDone = true;
+		}
+	}
+}
+//-->
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=wtScene EVENT="WTRenderEvent(renderEvent)">
+<!--
+	if(is_ie4up || is_aol4)
+	  rFunction(renderEvent);
+//-->
+</SCRIPT>
+
+</body>
+</html>

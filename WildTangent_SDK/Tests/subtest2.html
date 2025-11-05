@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>WildTest 2: Primitive Model Texturing Test</title>
+</head>
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="tests_js.js"></script>
+<body>
+<div align="Center">
+	<font size="5" face="Arial" color="Black"><b>Primitive Model Texturing Test</b></font>
+	<table>
+	<tr>
+		<TD VALIGN="top">
+		<object classid='clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3' ID='wtScene' width='300' height='300'><embed  type='application/x-wildtangent-web-driver' name='wtScene' width='300' height='300'></embed></object>
+
+		<form name="button"><input name="startTest" type="button" value="Loading..." onClick="beginTest();"> <input type="button" NAME="closer" value="Stop Test" onclick="javascript:self.close();"></form>
+		</td>
+		<TD VALIGN="top">
+			<b><font face="Arial" size="5" color="Gray">What You Should See:</font></b><br>
+			<table>
+			<tr>
+				<td><font face="Verdana" size="2"><b>
+				This test maps a texture onto three blocks.
+				<UL>
+					<LI>Step 1:<BR>
+					<IMG SRC="images/2-1.jpg" WIDTH=150 HEIGHT=150 ALT="Step 1" BORDER="0">
+					<LI>Step 2:<BR>
+					<IMG SRC="images/2-2.jpg" WIDTH=150 HEIGHT=150 ALT="Step 2" BORDER="0">
+					<LI>Step 3:<BR>
+					<IMG SRC="images/2-3.jpg" WIDTH=150 HEIGHT=150 ALT="Step 3" BORDER="0">
+					<LI>Step 4:<BR>
+					<IMG SRC="images/2-4.jpg" WIDTH=150 HEIGHT=150 ALT="Step 4" BORDER="0">
+					<LI>Step 5:<BR>
+					<IMG SRC="images/2-5.jpg" WIDTH=150 HEIGHT=150 ALT="Step 5" BORDER="0">
+					<LI>Step 6:<BR>
+					<IMG SRC="images/2-6.jpg" WIDTH=150 HEIGHT=150 ALT="Step 6" BORDER="0">
+					<LI>Step 7:<BR>
+					<IMG SRC="images/2-7.jpg" WIDTH=150 HEIGHT=150 ALT="Step 7" BORDER="0">
+					<LI>Step 8:<BR>
+					<IMG SRC="images/2-8.jpg" WIDTH=150 HEIGHT=150 ALT="Step 8" BORDER="0">
+					<LI>Step 9:<BR>
+					<IMG SRC="images/2-9.jpg" WIDTH=150 HEIGHT=150 ALT="Step 9" BORDER="0">
+					<LI>Step 10:<BR>
+					<IMG SRC="images/2-10.jpg" WIDTH=150 HEIGHT=150 ALT="Step 10" BORDER="0">
+				</UL>
+				</b></font></td>
+			</tr>
+			</table>
+		</TD>
+	</tr>
+	</table>
+</div>
+
+<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+<!--
+/* Apply the current texture from the array */
+var current_array 		 = jpg;
+var current_array_string = "jpg"; 
+var current_num   		 = 0;
+var current_texture_num  = 1;
+var isLoading = false;
+var isDone = false;
+var testDone = false;
+var test_drop		= null;
+var test_bitmap		= null;
+var box1, box2, box3;
+
+function initHTML()
+{
+	cy_frame = scene.createContainer();
+	box1 = scene.createBox( .5, .5, .5 );
+	mainStage.addObject( cy_frame );
+	cy_frame.attach( box1 );
+	cy_frame.setPosition( .525, 0, 0 );
+	
+	c_frame = scene.createContainer();
+	box2 = scene.createBox( .5, .5, .5 );
+	mainStage.addObject( c_frame );
+	c_frame.attach( box2 );
+	c_frame.setPosition(-.525, 0, 0 );
+	
+	b_frame = scene.createContainer();
+	box3 = scene.createBox( .5, .5, .5 );
+	mainStage.addObject( b_frame );
+	b_frame.attach( box3 );
+	b_frame.setPosition(0,0,0);
+
+	status_info.setTextColor(0, 255, 0);
+	
+	viewpoint.setPosition(-.7, .75, -1.5);
+	viewpoint.setLookAt(b_frame);
+}
+
+function rFunction(thisRender)
+{
+	var thisTime = new Date();
+	status = "Hi";
+	if(isDone)
+	{
+		return;
+	}
+	
+	if (thisTime.getTime() - lastRenderTime >= 1500)
+	{
+		if(!isLoading) {
+			isLoading = true;
+			if (current_num >= current_array.length)
+			{
+				current_num = 0;
+				switch ( current_array_string ) {
+					case "jpg":
+						current_array_string = "png";
+						current_array = png;
+						break;
+					case "png":
+						testDone = true;
+						break;
+				}
+			}
+
+			if(!testDone)
+			{
+				test_bitmap = scene.createBitmap( current_array[ current_num ], 0);
+				status_info.setColor( 255, 0, 0 );
+				status_info.drawText( 0, scene_height - 32, "Step: " + current_texture_num + " loading...");
+			} else {
+				status_info.setColor(255,0,0);
+				status_info.drawText(0,0, "DONE!" );
+				document.button.closer.value = "Finished!";
+				test_bitmap = scene.createBitmap( jpg_dir + "Finished.wjp");
+				box1.setTexture(test_bitmap);
+				box2.setTexture(test_bitmap);
+				box3.setTexture(test_bitmap);
+				isDone = true;
+				return;
+			}
+		}
+		
+		if(test_bitmap.getIsLoaded()) {
+			lastRenderTime = thisTime.getTime();
+			isLoading = false;
+	
+			box1.setTexture(test_bitmap);
+			box2.setTexture(test_bitmap);
+			box3.setTexture(test_bitmap);
+
+			status_info.setColor( 255, 0, 0 );
+			status_info.drawText( 0, scene_height - 32, "Step: " + current_texture_num );
+			status_info.drawText( 0, scene_height - 16, current_array[current_num].substring(current_array[ current_num ].lastIndexOf("/") + 1, current_array[ current_num ].length ) );
+			current_num++;
+			current_texture_num++;
+		}
+	}
+}
+//-->
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=wtScene EVENT="WTRenderEvent(renderEvent)">
+<!--
+	if(is_ie4up || is_aol4)
+	  rFunction(renderEvent);
+//-->
+</SCRIPT>
+
+</body>
+</html>

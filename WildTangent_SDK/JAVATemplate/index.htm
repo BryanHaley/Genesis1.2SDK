@@ -1,0 +1,35 @@
+<HTML>
+<HEAD>
+</HEAD>
+<BODY>
+
+<SCRIPT LANGUAGE=javascript>
+	//function to startup the Web Driver
+	window.onload = begin;
+	
+	//function to shutdown the Web Driver - this is not an optional shutdown
+	//to correctly destroy DirectX objects you MUST call this functions
+	window.onunload = end;
+	
+	function begin()
+	{
+		document.WTJavaApplet.begin(document.wtObject);
+	}
+
+	function end()
+	{
+		document.WTJavaApplet.end();
+	}
+</SCRIPT>
+
+<P>
+<!-- The object/embed tag for the WildTangent Web Driver -->
+<OBJECT classid=clsid:FA13A9FA-CA9B-11D2-9780-00104B242EA3 height=480 width=640 id=wtObject VIEWASTEXT>
+<embed type=application/x-wildtangent-web-driver name=wtObject width=640 height=480></embed></OBJECT>
+</P>
+
+<!-- The APPLET tag for the JAVA applet -->
+<APPLET code=Main.class name=WTJavaApplet height=1 width=1 VIEWASTEXT MAYSCRIPT></APPLET>
+
+</BODY>
+</HTML>

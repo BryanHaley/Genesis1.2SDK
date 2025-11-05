@@ -1,0 +1,24 @@
+<HTML>
+<HEAD>
+	<TITLE>Asteroidz 1.0</TITLE>
+	<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript" src="cookie.js"></SCRIPT>
+	<script language="JavaScript1.2" src="wtscene.js"></script>
+	<script language="JavaScript1.2" src="starwars_ship.js"></script>
+	<script language="JavaScript1.2" src="objects.js"></script>
+
+	<script FOR="wtScene" EVENT="WTKeyboardEvent(event)" LANGUAGE="JScript">keyboard(event);</script>
+
+	<script FOR="wtScene" EVENT="WTRenderEvent(event)" LANGUAGE="JScript">
+		if (document.all)
+			UpdateWorld(event);
+	</script>
+<BODY BGCOLOR="Black" text="White" onResize="refreshNetscape();" onLoad="CreateScene();">
+
+<DIV ID="posdiv" STYLE="position:absolute; top:0; left:0;">
+	<OBJECT id="wtScene" classid="CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3" width=500 height=500>
+		<EMBED type=application/x-wildtangent-web-driver name="wtScene" width="500" height="500"></EMBED>
+	</OBJECT>
+</DIV>
+
+</BODY>
+</HTML>

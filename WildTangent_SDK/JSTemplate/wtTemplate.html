@@ -1,0 +1,271 @@
+<HTML>
+<!--
+	This first script is to detect the WildTangent Web Driver in IE.
+	It creates the WT3D Class, and on failure, will return false
+-->
+<SCRIPT LANGUAGE="VBScript">
+function ieDetectDriver
+  on error resume next
+	Dim wtObject
+	Set wtObject = CreateObject("WT3D.WT")
+	if err.number <> 0 then
+		Set wtObject = Nothing
+		ieDetectDriver = false
+	else
+		Set wtObject = Nothing
+		ieDetectDriver = true
+	end if
+end function
+</SCRIPT>
+<!--
+	This script detects the browser version, and starts the WildTangent Web
+	Driver detection process - calling ieDetectDriver for IE, or returning the
+	existance of the plugin in NS
+-->
+<SCRIPT LANGUAGE="JavaScript">
+var agt=navigator.userAgent.toLowerCase(); 
+var is_major = parseInt(navigator.appVersion); 
+var is_minor = parseFloat(navigator.appVersion); 
+var is_nav  = ((agt.indexOf('mozilla')!=-1) && (agt.indexOf('spoofer')==-1) && (agt.indexOf('compatible') == -1) && (agt.indexOf('opera')==-1) && (agt.indexOf('webtv')==-1)); 
+var is_nav4up = (is_nav && (is_major >= 4)); 
+var is_ie   = (agt.indexOf("msie") != -1); 
+var is_ie4up  = (is_ie  && (is_major >= 4)); 
+var is_aol   = (agt.indexOf("aol") != -1); 
+var is_aol4  = (is_aol && is_ie4up); 
+var is_opera = (agt.indexOf("opera") != -1); 
+var is_webtv = (agt.indexOf("webtv") != -1); 
+var wtLightAmbient = 0;
+var wtLightPoint = 1;
+var wtLightSpot = 2;
+var wtMouseNoEvents = 0;
+var wtMouseNoObjects = 1;
+var wtMouseAllObjects = 2;
+var wtMouseClickObjects = 3;
+var wtWebDriverPresent = false;
+
+function driverExists()
+{
+	if(is_ie4up || is_aol4)
+		wtWebDriverPresent = ieDetectDriver();
+
+	if(is_nav4up)
+	{
+		if (navigator.plugins["WildTangent Web Driver Plugin"] 
+			  && navigator.mimeTypes["application/x-wildtangent-web-driver"] 
+			  && navigator.mimeTypes["application/x-wildtangent-web-driver"].enabledPlugin != null) 
+			    wtWebDriverPresent = true;
+	}
+	return wtWebDriverPresent;
+}
+</SCRIPT>
+
+<HEAD>
+<TITLE>WildTangent Web Driver Template Page</TITLE>
+</HEAD>
+<BODY bgcolor='#2020DD'>
+<!--
+	This is the WildTangent Web Driver object/embed tag.  The width and the height are the area on 
+	the web page that the object will take up
+-->
+	<OBJECT 
+		CLASSID=CLSID:FA13A9FA-CA9B-11D2-9780-00104B242EA3 
+		NAME='wtObject' 
+		width='640' 
+		height='480'>
+		<EMBED  
+			type='application/x-wildtangent-web-driver' 
+			name='wtObject' 
+			width='640' 
+			height='480'>
+		</EMBED>
+	</OBJECT>
+</BODY>
+
+<!-- Init the wtObjects... -->
+<SCRIPT LANGUAGE=javascript>
+/*	Global variables used to talk to the WildTangent Web Driver	*/
+var wtObj;			//the wtObject
+var stage;			//the default stage
+var ambLight;			//a default ambient light in the stage
+var camera;					//a default camera
+var backImage;			//a background image for the default camera
+var backDrop;				//the drop object of the background image
+var boxModel;				//the box to spin
+var boxContainer;		//a container to hold the box
+
+/*	Master Init function.  Called by the window.onLoad() event	*/
+function init() 
+{
+/***********************Order of Initialaztion***************************/
+/*  Check to see if the WildTangent Web Driver is installed.  If not, alert the user	*/
+/*  then give them the chance to do something else...							*/
+
+	if(!driverExists())
+	{
+		alert("The WildTangent Web Driver is not installed.");
+		//chance to do something else here...
+		return;
+	}
+
+	//Setup the wtObj variable
+	wtObj = document.wtObject;
+
+/*  Make sure the client machine can run Web Driver content.  DirectX 3   */
+/*  or higher and 16bit color or higher is required.											*/
+/*  Check to make sure the user machine has DirectX 3 or higher.  */
+	if(wtObj.getInitStatus(0) == true)
+	{
+		alert("No DirectX3+ detected.  Quitting...");
+		return;
+	}
+
+/*  Check to make sure the user machine is in 16bit color or higher.  */
+	if(wtObj.getInitStatus(1) == true)
+	{
+		alert("256 color mode detected.  Quitting...");
+		return;
+	}
+
+	//Create a stage and camera - giving the camera a default name
+	stage = wtObj.createStage();
+	camera = stage.createCamera();
+	camera.setName("Main View");
+
+	//setViewRect() is really not needed, only if you have more than one camera
+	//by default, a single camera will take the full render area
+	camera.setViewRect(0, 0, 640, 480);
+
+	//Position the camera in the scene - just back from the origin
+	camera.setPosition(0, 0, -2);
+
+	//Create the background bitmap, color it, and add it to the camera
+	backImage = wtObj.createBlankBitmap(100, 100);
+	backImage.setColor(0, 0, 64);
+	backDrop = camera.addDrop(backImage);
+
+	//Make the background image cover the entire camera area - use the
+	//getWidth() and getHeight() functions on the wtObject
+	backDrop.setSize(wtObj.getWidth(), wtObj.getHeight());
+
+	//Create the default ambient light, and add it to the stage
+	ambLight = wtObj.createLight(wtLightAmbient);
+	ambLight.setColor(100, 100, 100);
+	stage.addObject(ambLight);
+
+	//Create the box model - x, y, z, TilesPerSide
+	boxModel = wtObj.createBox(1, 1, 1, 5);
+	
+	//Set the color of each face of the box
+	boxModel.setColor(255, 0, 0, "top");
+	boxModel.setColor(0, 255, 0, "bottom");
+	boxModel.setColor(0, 0, 255, "left");
+	boxModel.setColor(255, 0, 255, "right");
+	boxModel.setColor(255, 255, 0, "front");
+	boxModel.setColor(0, 255, 255, "back");
+
+	//Create a container to hold the boxModel
+	boxContainer = wtObj.createContainer();
+	//Attach the boxModel to the boxContainer
+	boxContainer.attach(boxModel);
+	//Add the container to the stage
+	stage.addObject(boxContainer);
+	
+	//Put a rotation on the container - to make it look interesting
+	boxContainer.setConstantRotation(1, 1, 1, 25);
+
+	//For Navigator, attach the event messages to the respective functions.
+	//For Explorer, this will be done later, in a <SCRIPT> block
+	if(is_nav4up)
+	{
+		wtObj.setOnKeyboardEvent("kFunction");
+		wtObj.setOnMouseEvent("mFunction");
+		wtObj.setOnRenderEvent("rFunction");
+	}
+
+	//Turn on the wtObject events.  For the render and keyboard, the value passed
+	//into the function is true or false, to turn on or off event reporting.  For mouse 
+	//events, you can select the level of object picking you want the wtObject to perform.
+	//If you never need to do object picking, don't turn it on - use wtMouseNoObjects.
+	//If you need to just pick objects on a button click, use wtMouseClickObjects.
+	//If you need to pick objects on mouse-overs, not just button clicks, use wtMouseAllObjects.
+	wtObj.setNotifyMouseEvent(wtMouseClickObjects);
+	wtObj.setNotifyRenderEvent(true);
+	wtObj.setNotifyKeyboardEvent(true);
+
+	//Turn on rendering.  There are several options for scene rendering:
+	//wtObj.start() - This will start the render loop for all active cameras in the scene
+	wtObj.start();
+}
+
+//	Assign the window onLoad() event to the init function - this will call init AFTER
+//	the page (and all the scripts) have been loaded
+window.onload = init;
+
+/*	Render Event Handler		*/
+function rFunction(thisRender)
+{
+	//Add in any render specific code here
+
+	//Tip:  this function gets called EVERY RENDER.  If your camera is rendering at
+	//30 FPS, that is 30 calls a second.  Try to keep this function optimized as much as possible
+}
+
+/*	Keyboard Event Handler	*/
+function kFunction(keyEvent)
+{
+	var keyCode = keyEvent.getKey();		//the virtual keycode of the key pressed
+	var keyState = keyEvent.getKeyState();		//0 is up, 1 is down
+
+	//Add in any keyboard processing code here
+
+	//Tip:  The repeat rate of keypress events is configurable by the user in Windows
+	//As such, if you need smooth effects based on a user pressing and holding a key,
+	//try simply setting a boolean variable here based on the keyState, and actually do
+	//the effect processing in the render event handler, which gets called at a consistant
+	//rate.
+}
+
+/*	Mouse Event Handler		*/
+function mFunction(mouseEvent)
+{
+	var mouseX = mouseEvent.getX();
+	var mouseY = mouseEvent.getY();
+	var buttonState = mouseEvent.getButtonState();
+	var button1, button2, shiftKey, controlKey;
+	button1 = button2 = shiftKey = controlKey = false;
+
+	if(buttonState & 1) button1 = true;
+	if(buttonState & 2) button2 = true;
+	if(buttonState & 4) shiftKey = true;
+	if(buttonState & 8) controlKey = true;
+
+	//Add in any mouse processing code
+
+	//Tip:  this function gets called whenever the mouse moves, or the user clicks a
+	//mouse button.  This function has the potential to get called many times, so try
+	//to keep this function optimized as well.  Use the local variables defined above to
+	//avoid calling into the WTAPI for mouse data.
+}
+</SCRIPT>
+
+<!--
+	These next three script blocks associate the events of the wtObject with the
+	approprate event handlers defined in the script above.  Remember, the FOR
+	parameter must point to the wtObject that you want to capture events for, or
+	your event handlers will never get called.
+-->
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTRenderEvent(renderEvent)">
+	if(is_ie4up)
+	  rFunction(renderEvent);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTKeyboardEvent(keyEvent)">
+	if(is_ie4up)
+	  kFunction(keyEvent);
+
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=wtObject EVENT="WTMouseEvent(mouseEvent)">
+	if(is_ie4up)
+	  mFunction(mouseEvent);
+</SCRIPT>
+
+</HTML>
